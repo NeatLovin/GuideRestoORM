@@ -17,5 +17,18 @@
         <class>ch.hearc.ig.guideresto.business.Localisation</class>
         <class>ch.hearc.ig.guideresto.business.Restaurant</class>
         <class>ch.hearc.ig.guideresto.business.RestaurantType</class>
+
+        <properties>
+            <!-- Database connection settings -->
+            <property name="jakarta.persistence.jdbc.driver" value="oracle.jdbc.OracleDriver" />
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:oracle:thin:@db.ig.he-arc.ch:1521:ens" />
+            <property name="jakarta.persistence.jdbc.user" value="VOTRE_USERNAME" />
+            <property name="jakarta.persistence.jdbc.password" value="VOTRE_PASSWORD" />
+            <!-- Specific configuration for Hibernate -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect" />
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql"          value="true"/>
+            <property name="hibernate.generate_statistics" value="true"/>
+        </properties>
     </persistence-unit>
 </persistence>
