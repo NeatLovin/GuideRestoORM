@@ -1,16 +1,30 @@
 package ch.hearc.ig.guideresto.business;
 
+import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * @author cedric.baudet
  */
+@Entity
+@Table(name = "TYPES_GASTRONOMIQUES")
 public class RestaurantType implements IBusinessObject {
 
+    @Id
+    @Column(name = "NUMERO")
+    @SequenceGenerator(name = "type_seq", sequenceName = "SEQ_TYPES_GASTRONOMIQUES", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "type_seq")
     private Integer id;
+
+    @Column(name = "LIBELLE", nullable = false, unique = true)
     private String label;
+
+    @Lob
+    @Column(name = "DESCRIPTION", nullable = false)
     private String description;
+
+    @Transient
     private Set<Restaurant> restaurants;
 
     public RestaurantType() {
@@ -22,7 +36,7 @@ public class RestaurantType implements IBusinessObject {
     }
 
     public RestaurantType(Integer id, String label, String description) {
-        this.restaurants = new HashSet();
+        this.restaurants = new HashSet<>();
         this.id = id;
         this.label = label;
         this.description = description;

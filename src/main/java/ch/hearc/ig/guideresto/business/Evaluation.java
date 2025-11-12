@@ -1,14 +1,25 @@
 package ch.hearc.ig.guideresto.business;
 
+import jakarta.persistence.*;
 import java.util.Date;
 
 /**
  * @author cedric.baudet
  */
+@MappedSuperclass
 public abstract class Evaluation implements IBusinessObject {
 
+    @Id
+    @Column(name = "NUMERO")
+    @SequenceGenerator(name = "eval_seq", sequenceName = "SEQ_EVAL", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "eval_seq")
     private Integer id;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "DATE_EVAL")
     private Date visitDate;
+
+    @Transient
     private Restaurant restaurant;
 
     public Evaluation() {
