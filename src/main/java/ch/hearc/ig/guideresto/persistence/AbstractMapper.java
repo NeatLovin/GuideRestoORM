@@ -16,6 +16,9 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
 
     protected static final Logger logger = LogManager.getLogger();
 
+    // Cache simple en mémoire pour mapper les objets par id (scope: instance)
+    protected final Map<Integer, T> cache = new HashMap<>();
+
     public abstract T findById(int id);
     public abstract Set<T> findAll();
     public abstract T create(T object);
@@ -26,6 +29,24 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
     protected abstract String getSequenceQuery();
     protected abstract String getExistsQuery();
     protected abstract String getCountQuery();
+
+    /**
+     * Retourne la map d'identité partagée pour ce mapper (scope: thread courant)
+     */
+    @SuppressWarnings("unchecked")
+    protected Map<Integer, T> identityMap() {
+        return (Map<Integer, T>) IdentityMapContext.current().mapFor(this.getClass());
+    }
+
+    /**
+     * Utilitaire: tente de retrouver l'objet dans l'Identity Map ou le cache local.
+     * Retourne null si absent.
+     */
+    protected T findInCache(int id) {
+        T obj = identityMap().get(id);
+        if (obj != null) return obj;
+        return cache.get(id);
+    }
 
     /**
      * Vérifie si un objet avec l'ID donné existe.
@@ -93,33 +114,36 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
      * @return true si le cache ne contient aucun objet, false sinon
      */
     protected boolean isCacheEmpty() {
-        // TODO à implémenter par vos soins
-        throw new UnsupportedOperationException("Vous devez implémenter votre cache vous-même !");
+        return cache.isEmpty() && identityMap().isEmpty();
     }
 
     /**
      * Vide le cache
      */
     protected void resetCache() {
-        // TODO à implémenter par vos soins
-        throw new UnsupportedOperationException("Vous devez implémenter votre cache vous-même !");
+        cache.clear();
+        identityMap().clear();
     }
 
     /**
-     * Ajoute un objet au cache
+     * Ajoute un objet au cache et à l'identity map (garantit une seule instance par id)
      * @param objet l'objet à ajouter
      */
     protected void addToCache(T objet) {
-        // TODO à implémenter par vos soins
-        throw new UnsupportedOperationException("Vous devez implémenter votre cache vous-même !");
+        if (objet != null && objet.getId() != null) {
+            cache.put(objet.getId(), objet);
+            identityMap().put(objet.getId(), objet);
+        }
     }
 
     /**
-     * Retire un objet du cache
+     * Retire un objet du cache et de l'identity map
      * @param id l'ID de l'objet à retirer du cache
      */
     protected void removeFromCache(Integer id) {
-        // TODO à implémenter par vos soins
-        throw new UnsupportedOperationException("Vous devez implémenter votre cache vous-même !");
+        if (id != null) {
+            cache.remove(id);
+            identityMap().remove(id);
+        }
     }
 }
