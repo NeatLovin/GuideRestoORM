@@ -20,12 +20,8 @@ public class CompleteEvaluation extends Evaluation {
     @Column(name = "NOM_UTILISATEUR", nullable = false)
     private String username;
 
-    @Transient
-    private Set<Grade> grades;
-
-    // Colonne simple pour la FK
-    @Column(name = "FK_REST")
-    private Integer restaurantId;
+    @OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Grade> grades = new HashSet<>();
 
     public CompleteEvaluation() {
         this(null, null, null, null);
@@ -40,7 +36,6 @@ public class CompleteEvaluation extends Evaluation {
         this.comment = comment;
         this.username = username;
         this.grades = new HashSet<>();
-        this.restaurantId = restaurant != null ? restaurant.getId() : null;
     }
 
     public String getComment() {
@@ -67,11 +62,4 @@ public class CompleteEvaluation extends Evaluation {
         this.grades = grades;
     }
 
-    public Integer getRestaurantId() {
-        return restaurantId;
-    }
-
-    public void setRestaurantId(Integer restaurantId) {
-        this.restaurantId = restaurantId;
-    }
 }

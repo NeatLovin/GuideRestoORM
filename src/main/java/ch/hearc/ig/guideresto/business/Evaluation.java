@@ -3,10 +3,13 @@ package ch.hearc.ig.guideresto.business;
 import jakarta.persistence.*;
 import java.util.Date;
 
+
+
 /**
  * @author cedric.baudet
  */
-@MappedSuperclass
+@Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class Evaluation implements IBusinessObject {
 
     @Id
@@ -19,7 +22,8 @@ public abstract class Evaluation implements IBusinessObject {
     @Column(name = "DATE_EVAL")
     private Date visitDate;
 
-    @Transient
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "FK_REST")
     private Restaurant restaurant;
 
     public Evaluation() {

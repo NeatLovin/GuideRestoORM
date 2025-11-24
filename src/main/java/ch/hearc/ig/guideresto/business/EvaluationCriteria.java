@@ -1,6 +1,8 @@
 package ch.hearc.ig.guideresto.business;
 
 import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author cedric.baudet
@@ -20,6 +22,9 @@ public class EvaluationCriteria implements IBusinessObject {
 
     @Column(name = "DESCRIPTION")
     private String description;
+
+    @OneToMany(mappedBy = "criteria", cascade = CascadeType.ALL, orphanRemoval = false)
+    private Set<Grade> grades = new HashSet<>();
 
     public EvaluationCriteria() {
         this(null, null);
@@ -57,5 +62,13 @@ public class EvaluationCriteria implements IBusinessObject {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Set<Grade> getGrades() {
+        return grades;
+    }
+
+    public void setGrades(Set<Grade> grades) {
+        this.grades = grades;
     }
 }

@@ -18,10 +18,6 @@ public class BasicEvaluation extends Evaluation {
     @Column(name = "ADRESSE_IP", nullable = false)
     private String ipAddress;
 
-    // Colonne simple pour la FK
-    @Column(name = "FK_REST", nullable = false)
-    private Integer restaurantId;
-
     public BasicEvaluation() {
         this(null, null, null, null);
     }
@@ -34,7 +30,6 @@ public class BasicEvaluation extends Evaluation {
         super(id, visitDate, restaurant);
         this.likeRestaurant = likeRestaurant;
         this.ipAddress = ipAddress;
-        this.restaurantId = restaurant != null ? restaurant.getId() : null;
     }
 
     public Boolean getLikeRestaurant() {
@@ -51,14 +46,6 @@ public class BasicEvaluation extends Evaluation {
 
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
-    }
-
-    public Integer getRestaurantId() {
-        return restaurantId;
-    }
-
-    public void setRestaurantId(Integer restaurantId) {
-        this.restaurantId = restaurantId;
     }
 
 }

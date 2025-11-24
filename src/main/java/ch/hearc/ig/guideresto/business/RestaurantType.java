@@ -24,8 +24,8 @@ public class RestaurantType implements IBusinessObject {
     @Column(name = "DESCRIPTION", nullable = false)
     private String description;
 
-    @Transient
-    private Set<Restaurant> restaurants;
+    @OneToMany(mappedBy = "type", cascade = CascadeType.ALL, orphanRemoval = false)
+    private Set<Restaurant> restaurants = new HashSet<>();
 
     public RestaurantType() {
         this(null, null);
@@ -36,7 +36,6 @@ public class RestaurantType implements IBusinessObject {
     }
 
     public RestaurantType(Integer id, String label, String description) {
-        this.restaurants = new HashSet<>();
         this.id = id;
         this.label = label;
         this.description = description;

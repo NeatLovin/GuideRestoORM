@@ -23,8 +23,8 @@ public class City implements IBusinessObject {
     @Column(name = "NOM_VILLE", nullable = false)
     private String cityName;
 
-    @Transient
-    private Set<Restaurant> restaurants;
+    @OneToMany(mappedBy = "address.city", cascade = CascadeType.ALL, orphanRemoval = false)
+    private Set<Restaurant> restaurants = new HashSet<>();
 
     public City() {
         this(null, null);
@@ -38,7 +38,6 @@ public class City implements IBusinessObject {
         this.id = id;
         this.zipCode = zipCode;
         this.cityName = cityName;
-        this.restaurants = new HashSet<>();
     }
 
     public Integer getId() {

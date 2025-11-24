@@ -12,6 +12,11 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "RESTAURANTS")
+@NamedQueries({
+    @NamedQuery(name = "Restaurant.findAll", query = "select distinct r from Restaurant r"),
+    @NamedQuery(name = "Restaurant.findByName", query = "select r from Restaurant r where upper(r.name) like upper(:name)"),
+    @NamedQuery(name = "Restaurant.findByCity", query = "select r from Restaurant r join r.address.city c where upper(c.cityName) like upper(:cityName)")
+})
 public class Restaurant implements IBusinessObject {
 
     @Id
@@ -30,21 +35,15 @@ public class Restaurant implements IBusinessObject {
     @Column(name = "SITE_WEB")
     private String website;
 
-    // Colonnes simples pour les FKs (associations ignorées)
-    @Column(name = "FK_TYPE", nullable = false)
-    private Integer typeId;
-
-    @Column(name = "FK_VILL", nullable = false)
-    private Integer cityId;
-
-    @Transient
-    private Set<Evaluation> evaluations;
-
-    @Transient
+    @Embedded
     private Localisation address;
 
-    @Transient
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "FK_TYPE")
     private RestaurantType type;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Evaluation> evaluations = new HashSet<>();
 
     public Restaurant() {
         this(null, null, null, null, null, null);
@@ -58,9 +57,6 @@ public class Restaurant implements IBusinessObject {
         this.evaluations = new HashSet<>();
         this.address = new Localisation(street, city);
         this.type = type;
-        // valeurs simples si connues
-        this.typeId = (type != null) ? type.getId() : null;
-        this.cityId = (city != null) ? city.getId() : null;
     }
 
     public Restaurant(Integer id, String name, String description, String website, Localisation address, RestaurantType type) {
@@ -71,8 +67,6 @@ public class Restaurant implements IBusinessObject {
         this.evaluations = new HashSet<>();
         this.address = address;
         this.type = type;
-        this.typeId = (type != null) ? type.getId() : null;
-        this.cityId = (address != null && address.getCity() != null) ? address.getCity().getId() : null;
     }
 
     public Integer getId() {
@@ -129,16 +123,13 @@ public class Restaurant implements IBusinessObject {
 
     public void setType(RestaurantType type) {
         this.type = type;
-        this.typeId = (type != null) ? type.getId() : null;
     }
 
     public boolean hasEvaluations() {
         return CollectionUtils.isNotEmpty(evaluations);
     }
 
-    // Expose une propriété simple pour la colonne ADRESSE
-    @Access(AccessType.PROPERTY)
-    @Column(name = "ADRESSE", nullable = false)
+    @Transient
     public String getStreet() {
         return this.address != null ? this.address.getStreet() : null;
     }
@@ -150,19 +141,4 @@ public class Restaurant implements IBusinessObject {
         this.address.setStreet(street);
     }
 
-    public Integer getTypeId() {
-        return typeId;
-    }
-
-    public void setTypeId(Integer typeId) {
-        this.typeId = typeId;
-    }
-
-    public Integer getCityId() {
-        return cityId;
-    }
-
-    public void setCityId(Integer cityId) {
-        this.cityId = cityId;
-    }
 }

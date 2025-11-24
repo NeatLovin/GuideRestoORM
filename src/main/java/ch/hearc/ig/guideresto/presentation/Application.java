@@ -76,6 +76,22 @@ public class Application {
     }
 
     /**
+     * Affiche la liste de tous les restaurants, sans filtre
+     */
+    private static void showRestaurantsList() {
+        System.out.println("Liste des restaurants : ");
+
+        Restaurant restaurant = pickRestaurant(FakeItems.getAllRestaurants());
+
+        if (restaurant != null) { // Si l'utilisateur a choisi un restaurant, on l'affiche, sinon on ne fait rien et l'application va réafficher le menu principal
+            // Accès explicite aux associations pour vérifier le lazy loading
+            restaurant.getType().getLabel();
+            restaurant.getAddress().getCity().getCityName();
+            showRestaurant(restaurant);
+        }
+    }
+
+    /**
      * On affiche à l'utilisateur une liste de restaurants numérotés, et il doit en sélectionner un !
      *
      * @param restaurants Liste à afficher
@@ -99,19 +115,6 @@ public class Application {
         String choice = readString();
 
         return searchRestaurantByName(restaurants, choice);
-    }
-
-    /**
-     * Affiche la liste de tous les restaurants, sans filtre
-     */
-    private static void showRestaurantsList() {
-        System.out.println("Liste des restaurants : ");
-
-        Restaurant restaurant = pickRestaurant(FakeItems.getAllRestaurants());
-
-        if (restaurant != null) { // Si l'utilisateur a choisi un restaurant, on l'affiche, sinon on ne fait rien et l'application va réafficher le menu principal
-            showRestaurant(restaurant);
-        }
     }
 
     /**
