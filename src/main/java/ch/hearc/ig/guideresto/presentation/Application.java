@@ -4,6 +4,9 @@ import ch.hearc.ig.guideresto.business.*;
 import ch.hearc.ig.guideresto.persistence.CityMapper;
 import ch.hearc.ig.guideresto.persistence.RestaurantMapper;
 import ch.hearc.ig.guideresto.persistence.RestaurantTypeMapper;
+import ch.hearc.ig.guideresto.service.RestaurantService;
+import ch.hearc.ig.guideresto.service.CityService;
+import ch.hearc.ig.guideresto.service.RestaurantTypeService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
@@ -34,12 +37,17 @@ public class Application {
         RestaurantTypeMapper typeMapper = new RestaurantTypeMapper(em);
         RestaurantMapper restaurantMapper = new RestaurantMapper(em);
 
+        // Instanciation des services
+        CityService cityService = new CityService(em, cityMapper);
+        RestaurantTypeService typeService = new RestaurantTypeService(em, typeMapper);
+        RestaurantService restaurantService = new RestaurantService(em, cityMapper, restaurantMapper);
+
         System.out.println("Bienvenue dans GuideResto ! Que souhaitez-vous faire ?");
         int choice;
         do {
             printMainMenu();
             choice = readInt();
-            proceedMainMenu(choice, em, cityMapper, typeMapper, restaurantMapper);
+            proceedMainMenu(choice, cityService, typeService, restaurantService);
         } while (choice != 0);
 
         em.close();
@@ -65,22 +73,22 @@ public class Application {
      *
      * @param choice Un nombre entre 0 et 5.
      */
-    private static void proceedMainMenu(int choice, EntityManager em, CityMapper cityMapper, RestaurantTypeMapper typeMapper, RestaurantMapper restaurantMapper) {
+    private static void proceedMainMenu(int choice, CityService cityService, RestaurantTypeService typeService, RestaurantService restaurantService) {
         switch (choice) {
             case 1:
-                showRestaurantsList(restaurantMapper);
+                showRestaurantsList(restaurantService);
                 break;
             case 2:
-                searchRestaurantByName(restaurantMapper);
+                searchRestaurantByName(restaurantService);
                 break;
             case 3:
-                searchRestaurantByCity(restaurantMapper);
+                searchRestaurantByCity(restaurantService);
                 break;
             case 4:
-                searchRestaurantByType(restaurantMapper, typeMapper);
+                searchRestaurantByType(restaurantService, typeService);
                 break;
             case 5:
-                addNewRestaurant(em, cityMapper, typeMapper, restaurantMapper);
+                addNewRestaurant(cityService, typeService, restaurantService);
                 break;
             case 0:
                 System.out.println("Au revoir !");
@@ -94,9 +102,9 @@ public class Application {
     /**
      * Affiche la liste de tous les restaurants, sans filtre
      */
-    private static void showRestaurantsList(RestaurantMapper restaurantMapper) {
+    private static void showRestaurantsList(RestaurantService restaurantService) {
         System.out.println("Liste des restaurants : ");
-        Set<Restaurant> restaurants = restaurantMapper.findAll();
+        java.util.Set<ch.hearc.ig.guideresto.business.Restaurant> restaurants = restaurantService.findAllRestaurants();
         Restaurant restaurant = pickRestaurant(restaurants);
         if (restaurant != null) {
             showRestaurant(restaurant);
@@ -132,10 +140,10 @@ public class Application {
     /**
      * Affiche une liste de restaurants dont le nom contient une chaîne de caractères saisie par l'utilisateur
      */
-    private static void searchRestaurantByName(RestaurantMapper restaurantMapper) {
+    private static void searchRestaurantByName(RestaurantService restaurantService) {
         System.out.println("Veuillez entrer une partie du nom recherché : ");
         String research = readString();
-        Set<Restaurant> filteredList = restaurantMapper.findByName(research);
+        java.util.Set<ch.hearc.ig.guideresto.business.Restaurant> filteredList = restaurantService.findRestaurantsByName(research);
         Restaurant restaurant = pickRestaurant(filteredList);
         if (restaurant != null) {
             showRestaurant(restaurant);
@@ -145,10 +153,10 @@ public class Application {
     /**
      * Affiche une liste de restaurants dont le nom de la ville contient une chaîne de caractères saisie par l'utilisateur
      */
-    private static void searchRestaurantByCity(RestaurantMapper restaurantMapper) {
+    private static void searchRestaurantByCity(RestaurantService restaurantService) {
         System.out.println("Veuillez entrer une partie du nom de la ville désirée : ");
         String research = readString();
-        Set<Restaurant> filteredList = restaurantMapper.findByCityName(research);
+        java.util.Set<ch.hearc.ig.guideresto.business.Restaurant> filteredList = restaurantService.findRestaurantsByCityName(research);
         Restaurant restaurant = pickRestaurant(filteredList);
         if (restaurant != null) {
             showRestaurant(restaurant);
@@ -160,8 +168,8 @@ public class Application {
      *
      * @return La ville sélectionnée, ou null si aucune ville n'a été choisie.
      */
-    private static City pickCity(CityMapper cityMapper, EntityManager em) {
-        Set<City> cities = cityMapper.findAll();
+    private static City pickCity(CityService cityService) {
+        Set<City> cities = cityService.findAllCities();
         System.out.println("Voici la liste des villes possibles, veuillez entrer le NPA de la ville désirée : ");
         for (City currentCity : cities) {
             System.out.println(currentCity.getZipCode() + " " + currentCity.getCityName());
@@ -174,9 +182,7 @@ public class Application {
             city.setZipCode(readString());
             System.out.println("Veuillez entrer le nom de la nouvelle ville : ");
             city.setCityName(readString());
-            em.getTransaction().begin();
-            cityMapper.create(city);
-            em.getTransaction().commit();
+            cityService.createCity(city);
             return city;
         }
         return searchCityByZipCode(cities, choice);
@@ -187,8 +193,8 @@ public class Application {
      *
      * @return Le type sélectionné, ou null si aucun type n'a été choisi.
      */
-    private static RestaurantType pickRestaurantType(RestaurantTypeMapper typeMapper) {
-        Set<RestaurantType> types = typeMapper.findAll();
+    private static RestaurantType pickRestaurantType(RestaurantTypeService typeService) {
+        Set<RestaurantType> types = typeService.findAllTypes();
         System.out.println("Voici la liste des types possibles, veuillez entrer le libellé exact du type désiré : ");
         for (RestaurantType currentType : types) {
             System.out.println("\"" + currentType.getLabel() + "\" : " + currentType.getDescription());
@@ -201,11 +207,11 @@ public class Application {
      * L'utilisateur commence par sélectionner un type de restaurant, puis sélectionne un des restaurants proposés s'il y en a.
      * Si l'utilisateur sélectionne un restaurant, ce dernier lui sera affiché.
      */
-    private static void searchRestaurantByType(RestaurantMapper restaurantMapper, RestaurantTypeMapper typeMapper) {
-        RestaurantType chosenType = pickRestaurantType(typeMapper);
-        Set<Restaurant> filteredList = new LinkedHashSet<>();
+    private static void searchRestaurantByType(RestaurantService restaurantService, RestaurantTypeService typeService) {
+        RestaurantType chosenType = pickRestaurantType(typeService);
+        java.util.Set<ch.hearc.ig.guideresto.business.Restaurant> filteredList = new java.util.LinkedHashSet<>();
         if (chosenType != null) {
-            filteredList.addAll(restaurantMapper.findByType(chosenType.getId()));
+            filteredList.addAll(restaurantService.findRestaurantsByType(chosenType.getId()));
         }
         Restaurant restaurant = pickRestaurant(filteredList);
         if (restaurant != null) {
@@ -216,7 +222,7 @@ public class Application {
     /**
      * Le programme demande les informations nécessaires à l'utilisateur puis crée un nouveau restaurant dans le système.
      */
-    private static void addNewRestaurant(EntityManager em, CityMapper cityMapper, RestaurantTypeMapper typeMapper, RestaurantMapper restaurantMapper) {
+    private static void addNewRestaurant(CityService cityService, RestaurantTypeService typeService, RestaurantService restaurantService) {
         System.out.println("Vous allez ajouter un nouveau restaurant !");
         System.out.println("Quel est son nom ?");
         String name = readString();
@@ -228,11 +234,11 @@ public class Application {
         String street = readString();
         City city;
         do {
-            city = pickCity(cityMapper, em);
+            city = pickCity(cityService);
         } while (city == null);
         RestaurantType restaurantType;
         do {
-            restaurantType = pickRestaurantType(typeMapper);
+            restaurantType = pickRestaurantType(typeService);
         } while (restaurantType == null);
 
         Restaurant restaurant = new Restaurant();
@@ -245,10 +251,7 @@ public class Application {
         restaurant.setAddress(localisation);
         restaurant.setType(restaurantType);
 
-        em.getTransaction().begin();
-        restaurantMapper.create(restaurant);
-        em.getTransaction().commit();
-
+        restaurantService.createRestaurant(restaurant, localisation, city);
         showRestaurant(restaurant);
     }
 

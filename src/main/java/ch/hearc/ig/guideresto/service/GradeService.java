@@ -1,51 +1,51 @@
 package ch.hearc.ig.guideresto.service;
 
-import ch.hearc.ig.guideresto.business.City;
-import ch.hearc.ig.guideresto.persistence.CityMapper;
+import ch.hearc.ig.guideresto.business.Grade;
+import ch.hearc.ig.guideresto.persistence.GradeMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import java.util.Set;
 
-public class CityService {
+public class GradeService {
     private final EntityManager em;
-    private final CityMapper cityMapper;
+    private final GradeMapper gradeMapper;
 
-    public CityService(EntityManager em, CityMapper cityMapper) {
+    public GradeService(EntityManager em, GradeMapper gradeMapper) {
         this.em = em;
-        this.cityMapper = cityMapper;
+        this.gradeMapper = gradeMapper;
     }
 
-    public City createCity(City city) {
+    public Grade createGrade(Grade grade) {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            cityMapper.create(city);
+            gradeMapper.create(grade);
             tx.commit();
-            return city;
+            return grade;
         } catch (Exception e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         }
     }
 
-    public City updateCity(City city) {
+    public Grade updateGrade(Grade grade) {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            cityMapper.update(city);
+            gradeMapper.update(grade);
             tx.commit();
-            return city;
+            return grade;
         } catch (Exception e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         }
     }
 
-    public boolean deleteCity(City city) {
+    public boolean deleteGrade(Grade grade) {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            boolean result = cityMapper.delete(city);
+            boolean result = gradeMapper.delete(grade);
             tx.commit();
             return result;
         } catch (Exception e) {
@@ -54,11 +54,12 @@ public class CityService {
         }
     }
 
-    public Set<City> findAllCities() {
-        return cityMapper.findAll();
+    public Set<Grade> findAllGrades() {
+        return gradeMapper.findAll();
     }
 
-    public City findCityById(int id) {
-        return cityMapper.findById(id);
+    public Grade findGradeById(int id) {
+        return gradeMapper.findById(id);
     }
 }
+
