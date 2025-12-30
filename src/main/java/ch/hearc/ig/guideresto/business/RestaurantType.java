@@ -9,6 +9,10 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "TYPES_GASTRONOMIQUES")
+@NamedQueries({
+    @NamedQuery(name = "RestaurantType.findAll", query = "SELECT t FROM RestaurantType t ORDER BY t.label"),
+    @NamedQuery(name = "RestaurantType.findByName", query = "SELECT t FROM RestaurantType t WHERE UPPER(t.label) LIKE :name ORDER BY t.label")
+})
 public class RestaurantType implements IBusinessObject {
 
     @Id
@@ -24,7 +28,7 @@ public class RestaurantType implements IBusinessObject {
     @Column(name = "DESCRIPTION", nullable = false)
     private String description;
 
-    @OneToMany(mappedBy = "type", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "type", cascade = CascadeType.ALL)
     private Set<Restaurant> restaurants = new HashSet<>();
 
     public RestaurantType() {

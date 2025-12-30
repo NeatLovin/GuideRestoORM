@@ -45,7 +45,6 @@ public class FakeItems {
         cities.add(city);
 
         Restaurant restaurant = new Restaurant(1, "Fleur-de-Lys", "Pizzeria au centre de Neuchâtel", "http://www.pizzeria-neuchatel.ch/", "Rue du Bassin 10", city, typeSuisse);
-        city.getRestaurants().add(restaurant);
         typeSuisse.getRestaurants().add(restaurant);
         restaurant.getEvaluations().add(new BasicEvaluation(1, new Date(), restaurant, true, "1.2.3.4"));
         restaurant.getEvaluations().add(new BasicEvaluation(2, new Date(), restaurant, true, "1.2.3.5"));

@@ -1,14 +1,18 @@
 package ch.hearc.ig.guideresto.business;
 
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+
 
 /**
  * @author cedric.baudet
  */
 @Entity
 @Table(name = "VILLES")
+@NamedQueries({
+    @NamedQuery(name = "City.findAll", query = "SELECT c FROM City c ORDER BY c.cityName"),
+    @NamedQuery(name = "City.findByZipCode", query = "SELECT c FROM City c WHERE c.zipCode = :zip ORDER BY c.cityName"),
+    @NamedQuery(name = "City.findByName", query = "SELECT c FROM City c WHERE UPPER(c.cityName) LIKE :name ORDER BY c.cityName")
+})
 public class City implements IBusinessObject {
 
     @Id
@@ -23,8 +27,6 @@ public class City implements IBusinessObject {
     @Column(name = "NOM_VILLE", nullable = false)
     private String cityName;
 
-    @OneToMany(mappedBy = "address.city", cascade = CascadeType.ALL, orphanRemoval = false)
-    private Set<Restaurant> restaurants = new HashSet<>();
 
     public City() {
         this(null, null);
@@ -64,12 +66,5 @@ public class City implements IBusinessObject {
         this.cityName = city;
     }
 
-    public Set<Restaurant> getRestaurants() {
-        return restaurants;
-    }
-
-    public void setRestaurants(Set<Restaurant> restaurants) {
-        this.restaurants = restaurants;
-    }
 
 }

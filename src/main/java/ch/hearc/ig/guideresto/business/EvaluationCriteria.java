@@ -9,6 +9,10 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "CRITERES_EVALUATION")
+@NamedQueries({
+    @NamedQuery(name = "EvaluationCriteria.findAll", query = "SELECT c FROM EvaluationCriteria c ORDER BY c.name"),
+    @NamedQuery(name = "EvaluationCriteria.findByName", query = "SELECT c FROM EvaluationCriteria c WHERE UPPER(c.name) LIKE :name ORDER BY c.name")
+})
 public class EvaluationCriteria implements IBusinessObject {
 
     @Id

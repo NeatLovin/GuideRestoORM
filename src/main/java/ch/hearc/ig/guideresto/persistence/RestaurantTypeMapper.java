@@ -2,44 +2,30 @@ package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.RestaurantType;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
-    private static final String SELECT_BY_ID = "SELECT numero, libelle, description FROM TYPES_GASTRONOMIQUES WHERE numero = ?";
-    private static final String SELECT_ALL = "SELECT numero, libelle, description FROM TYPES_GASTRONOMIQUES ORDER BY libelle";
-    private static final String INSERT = "INSERT INTO TYPES_GASTRONOMIQUES (libelle, description) VALUES (?, ?)";
-    private static final String UPDATE = "UPDATE TYPES_GASTRONOMIQUES SET libelle = ?, description = ? WHERE numero = ?";
-    private static final String DELETE = "DELETE FROM TYPES_GASTRONOMIQUES WHERE numero = ?";
+    private final EntityManager em;
 
-    private static final String EXISTS_QUERY = "SELECT 1 FROM TYPES_GASTRONOMIQUES WHERE numero = ?";
-    private static final String COUNT_QUERY = "SELECT COUNT(*) FROM TYPES_GASTRONOMIQUES";
-    private static final String SEQUENCE_QUERY = "SELECT SEQ_TYPES_GASTRONOMIQUES.CURRVAL FROM DUAL";
+    public RestaurantTypeMapper(EntityManager em) {
+        this.em = em;
+    }
+
 
 
     @Override
     public RestaurantType findById(int id) {
         RestaurantType cached = findInCache(id);
         if (cached != null) return cached;
-
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(SELECT_BY_ID)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    RestaurantType type = mapRow(rs);
-                    addToCache(type);
-                    return type;
-                }
-            }
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
+        RestaurantType type = em.find(RestaurantType.class, id);
+        if (type != null) {
+            addToCache(type);
         }
-        return null;
+        return type;
     }
 
 
@@ -51,117 +37,68 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
         if (!cache.isEmpty()) {
             return new LinkedHashSet<>(cache.values());
         }
-
-        Set<RestaurantType> result = new LinkedHashSet<>();
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(SELECT_ALL);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                RestaurantType type = mapRow(rs);
-                result.add(type);
-                addToCache(type);
-            }
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
+        TypedQuery<RestaurantType> query = em.createNamedQuery("RestaurantType.findAll", RestaurantType.class);
+        List<RestaurantType> resultList = query.getResultList();
+        Set<RestaurantType> result = new LinkedHashSet<>(resultList);
+        for (RestaurantType type : result) {
+            addToCache(type);
+        }
+        return result;
+    }
+    public Set<RestaurantType> findByName(String namePart) {
+        if (namePart == null) return new LinkedHashSet<>();
+        TypedQuery<RestaurantType> query = em.createNamedQuery("RestaurantType.findByName", RestaurantType.class);
+        query.setParameter("name", "%" + namePart.toUpperCase() + "%");
+        List<RestaurantType> resultList = query.getResultList();
+        Set<RestaurantType> result = new LinkedHashSet<>(resultList);
+        for (RestaurantType type : result) {
+            addToCache(type);
         }
         return result;
     }
 
-    private RestaurantType mapRow(ResultSet rs) throws SQLException {
-        Integer id = rs.getInt("numero");
-        String libelle = rs.getString("libelle");
-        String description = rs.getString("description");
 
-        return new RestaurantType(id, libelle, description);
-    }
 
     @Override
     public RestaurantType create(RestaurantType object) {
-        if (object == null) {
-            return null;
-        }
-
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(INSERT)) {
-            stmt.setString(1, object.getLabel());
-            stmt.setString(2, object.getDescription());
-
-            stmt.executeUpdate();
-            Integer id = getSequenceValue();
-            if (id != null && id > 0) {
-                object.setId(id);
-                addToCache(object);
-            }
-
-            return object;
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
-        }
-        return null;
+        if (object == null) return null;
+        em.persist(object);
+        addToCache(object);
+        return object;
     }
 
     @Override
     public boolean update(RestaurantType object) {
-        if (object == null || object.getId() == null) {
-            return false;
-        }
-
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(UPDATE)) {
-            stmt.setString(1, object.getLabel());
-            stmt.setString(2, object.getDescription());
-            stmt.setInt(3, object.getId());
-
-            int affected = stmt.executeUpdate();
-            if (affected > 0) {
-                addToCache(object);
-                return true;
-            }
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
-        }
-        return false;
+        if (object == null || object.getId() == null) return false;
+        em.merge(object);
+        addToCache(object);
+        return true;
     }
 
     @Override
     public boolean delete(RestaurantType object) {
-        if (object == null || object.getId() == null) {
-            return false;
-        }
-        return deleteById(object.getId());
+        if (object == null || object.getId() == null) return false;
+        RestaurantType managed = em.contains(object) ? object : em.merge(object);
+        em.remove(managed);
+        removeFromCache(object.getId());
+        return true;
     }
 
     @Override
     public boolean deleteById(int id) {
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(DELETE)) {
-            stmt.setInt(1, id);
-
-            int affected = stmt.executeUpdate();
-            if (affected > 0) {
-                removeFromCache(id);
-                return true;
-            }
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
+        RestaurantType type = findById(id);
+        if (type != null) {
+            return delete(type);
         }
         return false;
     }
 
 
+    // Les méthodes getSequenceQuery, getExistsQuery, getCountQuery ne sont plus nécessaires avec JPA
     @Override
-    protected String getSequenceQuery() {
-        return SEQUENCE_QUERY;
-    }
-
+    protected String getSequenceQuery() { return null; }
     @Override
-    protected String getExistsQuery() {
-        return EXISTS_QUERY;
-    }
-
+    protected String getExistsQuery() { return null; }
     @Override
-    protected String getCountQuery() {
-        return COUNT_QUERY;
-    }
+    protected String getCountQuery() { return null; }
 }

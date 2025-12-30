@@ -2,171 +2,103 @@ package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.EvaluationCriteria;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class EvaluationCriteriaMapper extends AbstractMapper<EvaluationCriteria> {
+public class EvaluationCriteriaMapper extends AbstractMapper<ch.hearc.ig.guideresto.business.EvaluationCriteria> {
+    private final EntityManager em;
 
-    private static final String SELECT_BY_ID = "SELECT numero, nom, description FROM CRITERES_EVALUATION WHERE numero = ?";
-    private static final String SELECT_ALL = "SELECT numero, nom, description FROM CRITERES_EVALUATION ORDER BY nom";
-    private static final String INSERT = "INSERT INTO CRITERES_EVALUATION (nom, description) VALUES (?, ?)";
-    private static final String UPDATE = "UPDATE CRITERES_EVALUATION SET nom = ?, description = ? WHERE numero = ?";
-    private static final String DELETE = "DELETE FROM CRITERES_EVALUATION WHERE numero = ?";
+    public EvaluationCriteriaMapper(EntityManager em) {
+        this.em = em;
+    }
 
-    private static final String EXISTS_QUERY = "SELECT 1 FROM CRITERES_EVALUATION WHERE numero = ?";
-    private static final String COUNT_QUERY = "SELECT COUNT(*) FROM CRITERES_EVALUATION";
-    private static final String SEQUENCE_QUERY = "SELECT SEQ_CRITERES_EVALUATION.CURRVAL FROM DUAL";
+
+
+
+    // Les méthodes getSequenceQuery, getExistsQuery, getCountQuery ne sont plus nécessaires avec JPA
+    @Override
+    protected String getSequenceQuery() { return null; }
+    @Override
+    protected String getExistsQuery() { return null; }
+    @Override
+    protected String getCountQuery() { return null; }
 
     @Override
-    protected String getSequenceQuery() { return SEQUENCE_QUERY; }
-
-    @Override
-    protected String getExistsQuery() { return EXISTS_QUERY; }
-
-    @Override
-    protected String getCountQuery() { return COUNT_QUERY; }
-
-    @Override
-    public EvaluationCriteria findById(int id) {
-        EvaluationCriteria cached = findInCache(id);
+    public ch.hearc.ig.guideresto.business.EvaluationCriteria findById(int id) {
+        ch.hearc.ig.guideresto.business.EvaluationCriteria cached = findInCache(id);
         if (cached != null) return cached;
-
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(SELECT_BY_ID)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    EvaluationCriteria ec = mapRow(rs);
-                    addToCache(ec);
-                    return ec;
-                }
-            }
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
+        ch.hearc.ig.guideresto.business.EvaluationCriteria ec = em.find(ch.hearc.ig.guideresto.business.EvaluationCriteria.class, id);
+        if (ec != null) {
+            addToCache(ec);
         }
-        return null;
+        return ec;
     }
 
     @Override
-    public Set<EvaluationCriteria> findAll() {
+    public Set<ch.hearc.ig.guideresto.business.EvaluationCriteria> findAll() {
         if (!identityMap().isEmpty()) {
             return new LinkedHashSet<>(identityMap().values());
         }
         if (!cache.isEmpty()) {
             return new LinkedHashSet<>(cache.values());
         }
-
-        Set<EvaluationCriteria> result = new LinkedHashSet<>();
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(SELECT_ALL);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                EvaluationCriteria ec = mapRow(rs);
-                result.add(ec);
-                addToCache(ec);
-            }
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
+        TypedQuery<ch.hearc.ig.guideresto.business.EvaluationCriteria> query = em.createNamedQuery("EvaluationCriteria.findAll", ch.hearc.ig.guideresto.business.EvaluationCriteria.class);
+        List<ch.hearc.ig.guideresto.business.EvaluationCriteria> resultList = query.getResultList();
+        Set<ch.hearc.ig.guideresto.business.EvaluationCriteria> result = new LinkedHashSet<>(resultList);
+        for (ch.hearc.ig.guideresto.business.EvaluationCriteria ec : result) {
+            addToCache(ec);
         }
         return result;
     }
 
     @Override
-    public EvaluationCriteria create(EvaluationCriteria object) {
+    public ch.hearc.ig.guideresto.business.EvaluationCriteria create(ch.hearc.ig.guideresto.business.EvaluationCriteria object) {
         if (object == null) return null;
-
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(INSERT)) {
-            stmt.setString(1, object.getName());
-            stmt.setString(2, object.getDescription());
-
-            stmt.executeUpdate();
-            Integer id = getSequenceValue();
-            if (id != null && id > 0) {
-                object.setId(id);
-                addToCache(object);
-            }
-            return object;
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
-        }
-        return null;
+        em.persist(object);
+        addToCache(object);
+        return object;
     }
 
     @Override
-    public boolean update(EvaluationCriteria object) {
+    public boolean update(ch.hearc.ig.guideresto.business.EvaluationCriteria object) {
         if (object == null || object.getId() == null) return false;
-
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(UPDATE)) {
-            stmt.setString(1, object.getName());
-            stmt.setString(2, object.getDescription());
-            stmt.setInt(3, object.getId());
-
-            int affected = stmt.executeUpdate();
-            if (affected > 0) {
-                addToCache(object);
-                return true;
-            }
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
-        }
-        return false;
+        em.merge(object);
+        addToCache(object);
+        return true;
     }
 
     @Override
-    public boolean delete(EvaluationCriteria object) {
+    public boolean delete(ch.hearc.ig.guideresto.business.EvaluationCriteria object) {
         if (object == null || object.getId() == null) return false;
-        return deleteById(object.getId());
+        ch.hearc.ig.guideresto.business.EvaluationCriteria managed = em.contains(object) ? object : em.merge(object);
+        em.remove(managed);
+        removeFromCache(object.getId());
+        return true;
     }
 
     @Override
     public boolean deleteById(int id) {
-        Connection connection = ConnectionUtils.getConnection();
-        try (PreparedStatement stmt = connection.prepareStatement(DELETE)) {
-            stmt.setInt(1, id);
-
-            int affected = stmt.executeUpdate();
-            if (affected > 0) {
-                removeFromCache(id);
-                return true;
-            }
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
+        ch.hearc.ig.guideresto.business.EvaluationCriteria ec = findById(id);
+        if (ec != null) {
+            return delete(ec);
         }
         return false;
     }
 
-    public Set<EvaluationCriteria> findByName(String namePart) {
-        Set<EvaluationCriteria> result = new LinkedHashSet<>();
-        if (namePart == null) return result;
-
-        Connection connection = ConnectionUtils.getConnection();
-        String sql = "SELECT numero, nom, description FROM CRITERES_EVALUATION WHERE UPPER(nom) LIKE ? ORDER BY nom";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, "%" + namePart.toUpperCase() + "%");
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    EvaluationCriteria ec = mapRow(rs);
-                    result.add(ec);
-                    addToCache(ec);
-                }
-            }
-        } catch (SQLException ex) {
-            logger.error("SQLException: {}", ex.getMessage());
+    public Set<ch.hearc.ig.guideresto.business.EvaluationCriteria> findByName(String namePart) {
+        if (namePart == null) return new LinkedHashSet<>();
+        TypedQuery<ch.hearc.ig.guideresto.business.EvaluationCriteria> query = em.createNamedQuery("EvaluationCriteria.findByName", ch.hearc.ig.guideresto.business.EvaluationCriteria.class);
+        query.setParameter("name", "%" + namePart.toUpperCase() + "%");
+        List<ch.hearc.ig.guideresto.business.EvaluationCriteria> resultList = query.getResultList();
+        Set<ch.hearc.ig.guideresto.business.EvaluationCriteria> result = new LinkedHashSet<>(resultList);
+        for (ch.hearc.ig.guideresto.business.EvaluationCriteria ec : result) {
+            addToCache(ec);
         }
         return result;
     }
-
-    private EvaluationCriteria mapRow(ResultSet rs) throws SQLException {
-        Integer id = rs.getInt("numero");
-        String name = rs.getString("nom");
-        String description = rs.getString("description");
-        return new EvaluationCriteria(id, name, description);
-    }
 }
+
+
