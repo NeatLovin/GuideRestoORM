@@ -462,8 +462,12 @@ public class Application {
         restaurant.setDescription(readString());
         System.out.println("Nouveau site web : ");
         restaurant.setWebsite(readString());
-        restaurantService.updateRestaurant(restaurant);
-        System.out.println("Merci, le restaurant a bien été modifié !");
+        try {
+            restaurantService.updateRestaurant(restaurant);
+            System.out.println("Merci, le restaurant a bien été modifié !");
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     /**
@@ -476,8 +480,12 @@ public class Application {
         System.out.println("Edition de l'adresse d'un restaurant !");
         System.out.println("Nouvelle rue : ");
         restaurant.getAddress().setStreet(readString());
-        restaurantService.updateRestaurant(restaurant);
-        System.out.println("L'adresse a bien été modifiée ! Merci !");
+        try {
+            restaurantService.updateRestaurant(restaurant);
+            System.out.println("L'adresse a bien été modifiée ! Merci !");
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     /**
@@ -487,8 +495,12 @@ public class Application {
         System.out.println("Etes-vous sûr de vouloir supprimer ce restaurant ? (O/n)");
         String choice = readString();
         if (choice.equals("o") || choice.equals("O")) {
-            restaurantService.deleteRestaurant(restaurant);
-            System.out.println("Le restaurant a bien été supprimé !");
+            try {
+                restaurantService.deleteRestaurant(restaurant);
+                System.out.println("Le restaurant a bien été supprimé !");
+            } catch (RuntimeException e) {
+                System.out.println(e.getMessage());
+            }
         } else {
             System.out.println("Suppression annulée.");
         }
@@ -579,3 +591,8 @@ public class Application {
     }
 
 }
+
+// Test manuel concurrence (README) :
+// Lancez deux instances de l'application, éditez ou supprimez le même restaurant en même temps.
+// Une seule modification/suppression passera, l'autre affichera :
+// "Conflit de modification: ce restaurant est en cours de modification par un autre utilisateur. Rechargez la fiche et réessayez."

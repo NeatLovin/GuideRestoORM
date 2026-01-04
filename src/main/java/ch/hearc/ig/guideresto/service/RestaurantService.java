@@ -8,6 +8,11 @@ import ch.hearc.ig.guideresto.persistence.RestaurantMapper;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PessimisticLockException;
+import jakarta.persistence.LockTimeoutException;
+import jakarta.persistence.PersistenceException;
+import java.util.HashMap;
 
 public class RestaurantService {
     private final EntityManager em;
@@ -67,10 +72,32 @@ public class RestaurantService {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            em.merge(restaurant);
+            // Verrouillage pessimiste avec timeout fail-fast
+            var props = new HashMap<String, Object>();
+            props.put("jakarta.persistence.lock.timeout", 0);
+            Restaurant locked = em.find(Restaurant.class, restaurant.getId(), LockModeType.PESSIMISTIC_WRITE, props);
+            if (locked == null) throw new RuntimeException("Restaurant non trouvé pour modification.");
+            // Appliquer les modifications sur l'entité verrouillée
+            locked.setName(restaurant.getName());
+            locked.setDescription(restaurant.getDescription());
+            locked.setWebsite(restaurant.getWebsite());
+            locked.setType(restaurant.getType());
+            if (locked.getAddress() != null && restaurant.getAddress() != null) {
+                locked.getAddress().setStreet(restaurant.getAddress().getStreet());
+                locked.getAddress().setCity(restaurant.getAddress().getCity());
+            }
             tx.commit();
+        } catch (PessimisticLockException | LockTimeoutException e) {
+            if (tx.isActive()) tx.rollback();
+            em.clear();
+            throw new RuntimeException("Conflit de modification: ce restaurant est en cours de modification par un autre utilisateur. Rechargez la fiche et réessayez.", e);
+        } catch (PersistenceException e) {
+            if (tx.isActive()) tx.rollback();
+            em.clear();
+            throw new RuntimeException("Erreur de persistance lors de la modification du restaurant.", e);
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
+            em.clear();
             throw e;
         }
     }
@@ -79,11 +106,23 @@ public class RestaurantService {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            Restaurant managed = em.contains(restaurant) ? restaurant : em.merge(restaurant);
-            em.remove(managed);
+            var props = new HashMap<String, Object>();
+            props.put("jakarta.persistence.lock.timeout", 0);
+            Restaurant locked = em.find(Restaurant.class, restaurant.getId(), LockModeType.PESSIMISTIC_WRITE, props);
+            if (locked == null) throw new RuntimeException("Restaurant non trouvé pour suppression.");
+            em.remove(locked);
             tx.commit();
+        } catch (PessimisticLockException | LockTimeoutException e) {
+            if (tx.isActive()) tx.rollback();
+            em.clear();
+            throw new RuntimeException("Conflit de modification: ce restaurant est en cours de modification par un autre utilisateur. Rechargez la fiche et réessayez.", e);
+        } catch (PersistenceException e) {
+            if (tx.isActive()) tx.rollback();
+            em.clear();
+            throw new RuntimeException("Erreur de persistance lors de la suppression du restaurant.", e);
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
+            em.clear();
             throw e;
         }
     }
