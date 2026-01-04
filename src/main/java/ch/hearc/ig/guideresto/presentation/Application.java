@@ -4,9 +4,14 @@ import ch.hearc.ig.guideresto.business.*;
 import ch.hearc.ig.guideresto.persistence.CityMapper;
 import ch.hearc.ig.guideresto.persistence.RestaurantMapper;
 import ch.hearc.ig.guideresto.persistence.RestaurantTypeMapper;
+import ch.hearc.ig.guideresto.persistence.GradeMapper;
+import ch.hearc.ig.guideresto.persistence.CompleteEvaluationMapper;
+import ch.hearc.ig.guideresto.persistence.EvaluationCriteriaMapper;
 import ch.hearc.ig.guideresto.service.RestaurantService;
 import ch.hearc.ig.guideresto.service.CityService;
 import ch.hearc.ig.guideresto.service.RestaurantTypeService;
+import ch.hearc.ig.guideresto.service.EvaluationCriteriaService;
+import ch.hearc.ig.guideresto.service.EvaluationService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
@@ -26,6 +31,11 @@ public class Application {
     private static Scanner scanner;
     private static final Logger logger = LogManager.getLogger(Application.class);
 
+    // Services partagés
+    private static EvaluationService evaluationService; // ajouté
+    private static EvaluationCriteriaService criteriaService; // ajouté
+    private static RestaurantService restaurantService; // ajouté
+
     public static void main(String[] args) {
         scanner = new Scanner(System.in);
 
@@ -36,11 +46,16 @@ public class Application {
         CityMapper cityMapper = new CityMapper(em);
         RestaurantTypeMapper typeMapper = new RestaurantTypeMapper(em);
         RestaurantMapper restaurantMapper = new RestaurantMapper(em);
+        GradeMapper gradeMapper = new GradeMapper(em);
+        CompleteEvaluationMapper completeEvaluationMapper = new CompleteEvaluationMapper(em, gradeMapper);
+        EvaluationCriteriaMapper evaluationCriteriaMapper = new EvaluationCriteriaMapper(em);
 
         // Instanciation des services
         CityService cityService = new CityService(em, cityMapper);
         RestaurantTypeService typeService = new RestaurantTypeService(em, typeMapper);
-        RestaurantService restaurantService = new RestaurantService(em, cityMapper, restaurantMapper);
+        restaurantService = new RestaurantService(em, cityMapper, restaurantMapper);
+        evaluationService = new EvaluationService(em, completeEvaluationMapper, gradeMapper); // même em
+        criteriaService = new EvaluationCriteriaService(em, evaluationCriteriaMapper);
 
         System.out.println("Bienvenue dans GuideResto ! Que souhaitez-vous faire ?");
         int choice;
@@ -368,9 +383,7 @@ public class Application {
                 editRestaurantAddress(restaurant);
                 break;
             case 6:
-                deleteRestaurant();
-                break;
-            case 0:
+                deleteRestaurant(restaurant);
                 break;
             default:
                 break;
@@ -387,12 +400,17 @@ public class Application {
     private static void addBasicEvaluation(Restaurant restaurant, Boolean like) {
         String ipAddress;
         try {
-            ipAddress = Inet4Address.getLocalHost().toString(); // Permet de retrouver l'adresse IP locale de l'utilisateur.
+            ipAddress = Inet4Address.getLocalHost().toString();
         } catch (UnknownHostException ex) {
             logger.error("Error - Couldn't retreive host IP address");
             ipAddress = "Indisponible";
         }
-        BasicEvaluation eval = new BasicEvaluation(1, new Date(), restaurant, like, ipAddress);
+        BasicEvaluation eval = new BasicEvaluation(null, new Date(), restaurant, like, ipAddress);
+        evaluationService.createBasicEvaluation(eval);
+        // Mise à jour immédiate de l'état en mémoire
+        if (restaurant.getEvaluations() == null) {
+            restaurant.setEvaluations(new LinkedHashSet<>());
+        }
         restaurant.getEvaluations().add(eval);
         System.out.println("Votre vote a été pris en compte !");
     }
@@ -406,12 +424,27 @@ public class Application {
         System.out.println("Merci d'évaluer ce restaurant !");
         System.out.println("Quel est votre nom d'utilisateur ? ");
         String username = readString();
-        System.out.println("Quel commentaire aimeriez-vous publier ?");
+        System.out.println("Quel commentaire aimeriez-vous publier?");
         String comment = readString();
-
-        CompleteEvaluation eval = new CompleteEvaluation(1, new Date(), restaurant, comment, username);
+        CompleteEvaluation eval = new CompleteEvaluation(null, new Date(), restaurant, comment, username);
+        Set<EvaluationCriteria> criterias = criteriaService.findAllCriteria();
+        for (EvaluationCriteria crit : criterias) {
+            int gradeValue;
+            do {
+                System.out.println("Note pour '" + crit.getName() + "' (1-5) : ");
+                gradeValue = readInt();
+            } while (gradeValue < 1 || gradeValue > 5);
+            Grade g = new Grade(null, gradeValue, eval, crit);
+            g.setEvaluation(eval);
+            g.setCriteria(crit);
+            eval.getGrades().add(g);
+        }
+        evaluationService.createCompleteEvaluation(eval);
+        // Mise à jour immédiate de l'état en mémoire
+        if (restaurant.getEvaluations() == null) {
+            restaurant.setEvaluations(new LinkedHashSet<>());
+        }
         restaurant.getEvaluations().add(eval);
-
         System.out.println("Votre évaluation a bien été enregistrée, merci !");
     }
 
@@ -423,15 +456,13 @@ public class Application {
      */
     private static void editRestaurant(Restaurant restaurant) {
         System.out.println("Edition d'un restaurant !");
-
         System.out.println("Nouveau nom : ");
         restaurant.setName(readString());
         System.out.println("Nouvelle description : ");
         restaurant.setDescription(readString());
         System.out.println("Nouveau site web : ");
         restaurant.setWebsite(readString());
-        System.out.println("Nouveau type de restaurant : ");
-        // Suppression de la variable newType toujours null et de la condition toujours fausse
+        restaurantService.updateRestaurant(restaurant);
         System.out.println("Merci, le restaurant a bien été modifié !");
     }
 
@@ -443,21 +474,23 @@ public class Application {
      */
     private static void editRestaurantAddress(Restaurant restaurant) {
         System.out.println("Edition de l'adresse d'un restaurant !");
-
         System.out.println("Nouvelle rue : ");
         restaurant.getAddress().setStreet(readString());
-        // Suppression de la variable newCity toujours null et de la condition toujours fausse
+        restaurantService.updateRestaurant(restaurant);
         System.out.println("L'adresse a bien été modifiée ! Merci !");
     }
 
     /**
      * Après confirmation par l'utilisateur, supprime complètement le restaurant et toutes ses évaluations du référentiel.
      */
-    private static void deleteRestaurant() {
+    private static void deleteRestaurant(Restaurant restaurant) {
         System.out.println("Etes-vous sûr de vouloir supprimer ce restaurant ? (O/n)");
         String choice = readString();
         if (choice.equals("o") || choice.equals("O")) {
+            restaurantService.deleteRestaurant(restaurant);
             System.out.println("Le restaurant a bien été supprimé !");
+        } else {
+            System.out.println("Suppression annulée.");
         }
     }
 

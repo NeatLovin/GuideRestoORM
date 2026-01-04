@@ -1,6 +1,7 @@
 package ch.hearc.ig.guideresto.service;
 
 import ch.hearc.ig.guideresto.business.CompleteEvaluation;
+import ch.hearc.ig.guideresto.business.BasicEvaluation;
 import ch.hearc.ig.guideresto.business.Grade;
 import ch.hearc.ig.guideresto.persistence.CompleteEvaluationMapper;
 import ch.hearc.ig.guideresto.persistence.GradeMapper;
@@ -21,22 +22,34 @@ public class EvaluationService {
     }
 
     /**
-     * Crée une évaluation complète et ses notes (grades) dans une transaction.
+     * Crée une evaluation basique en transaction
      */
-    public CompleteEvaluation createCompleteEvaluation(CompleteEvaluation evaluation, Set<Grade> grades) {
+    public BasicEvaluation createBasicEvaluation(BasicEvaluation evaluation) {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            completeEvaluationMapper.create(evaluation);
-            if (grades != null) {
-                for (Grade grade : grades) {
-                    grade.setEvaluation(evaluation);
-                    gradeMapper.create(grade);
-                }
-            }
+            // Persist the basic evaluation
+            em.persist(evaluation);
             tx.commit();
             return evaluation;
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
+
+    /**
+     * Crée une évaluation complète et ses notes (grades) dans une transaction.
+     * Simplifié : persister l'évaluation et laisser JPA cascader les grades.
+     */
+    public CompleteEvaluation createCompleteEvaluation(CompleteEvaluation evaluation) {
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.persist(evaluation);
+            tx.commit();
+            return evaluation;
+        } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         }

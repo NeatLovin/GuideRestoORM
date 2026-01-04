@@ -62,4 +62,29 @@ public class RestaurantService {
     public java.util.Set<ch.hearc.ig.guideresto.business.Restaurant> findRestaurantsByType(int typeId) {
         return restaurantMapper.findByType(typeId);
     }
+
+    public void updateRestaurant(Restaurant restaurant) {
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.merge(restaurant);
+            tx.commit();
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
+
+    public void deleteRestaurant(Restaurant restaurant) {
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            Restaurant managed = em.contains(restaurant) ? restaurant : em.merge(restaurant);
+            em.remove(managed);
+            tx.commit();
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
 }
