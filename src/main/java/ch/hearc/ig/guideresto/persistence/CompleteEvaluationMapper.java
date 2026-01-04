@@ -28,13 +28,13 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
 
 
     @Override
-    protected String getSequenceQuery() { return SEQUENCE_QUERY; }
+    protected String getSequenceQuery() { return null; }
 
     @Override
-    protected String getExistsQuery() { return EXISTS_QUERY; }
+    protected String getExistsQuery() { return null; }
 
     @Override
-    protected String getCountQuery() { return COUNT_QUERY; }
+    protected String getCountQuery() { return null; }
 
     @Override
     public CompleteEvaluation findById(int id) {
@@ -70,12 +70,7 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
     public CompleteEvaluation create(CompleteEvaluation evaluation) {
         if (evaluation == null) return null;
         em.persist(evaluation);
-        if (evaluation.getGrades() != null) {
-            for (Grade grade : evaluation.getGrades()) {
-                grade.setEvaluation(evaluation);
-                gradeMapper.create(grade);
-            }
-        }
+        // Les grades sont persistés via cascade définie sur CompleteEvaluation.grades
         addToCache(evaluation);
         return evaluation;
     }
@@ -132,4 +127,3 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
         return result;
     }
 }
-

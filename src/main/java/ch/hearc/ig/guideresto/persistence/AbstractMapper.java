@@ -33,9 +33,8 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
     /**
      * Retourne la map d'identité partagée pour ce mapper (scope: thread courant)
      */
-    @SuppressWarnings("unchecked")
     protected Map<Integer, T> identityMap() {
-        return (Map<Integer, T>) IdentityMapContext.current().mapFor(this.getClass());
+        return IdentityMapContext.current().mapFor(this.getClass());
     }
 
     /**
@@ -54,6 +53,11 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
      * @return true si l'objet existe, false sinon
      */
     public boolean exists(int id) {
+        // Si le mapper n'expose pas de requête SQL (mode JPA), indiquer que l'opération n'est pas supportée
+        if (getExistsQuery() == null) {
+            throw new UnsupportedOperationException("exists(id) is not supported for this mapper: no SQL exists-query provided. Use JPA find or a mapper-specific finder instead.");
+        }
+
         Connection connection = ConnectionUtils.getConnection();
 
         try (PreparedStatement stmt = connection.prepareStatement(getExistsQuery())) {
@@ -70,9 +74,13 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
 
     /**
      * Compte le nombre d'objets en base de données.
-     * @return
+     * @return Le nombre d'objets
      */
     public int count() {
+        if (getCountQuery() == null) {
+            throw new UnsupportedOperationException("count() is not supported for this mapper: no SQL count-query provided. Use JPA count query or a mapper-specific finder instead.");
+        }
+
         Connection connection = ConnectionUtils.getConnection();
 
         try (PreparedStatement stmt = connection.prepareStatement(getCountQuery());
@@ -91,9 +99,13 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
     /**
      * Obtient la valeur de la séquence actuelle en base de données
      * @return Le nombre de villes
-     * @En cas d'erreur SQL
+     * En cas d'erreur SQL
      */
     protected Integer getSequenceValue() {
+        if (getSequenceQuery() == null) {
+            throw new UnsupportedOperationException("getSequenceValue() is not supported for this mapper: no SQL sequence-query provided.");
+        }
+
         Connection connection = ConnectionUtils.getConnection();
 
         try (PreparedStatement stmt = connection.prepareStatement(getSequenceQuery());

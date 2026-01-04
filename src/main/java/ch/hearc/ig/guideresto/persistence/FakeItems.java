@@ -46,39 +46,39 @@ public class FakeItems {
 
         Restaurant restaurant = new Restaurant(1, "Fleur-de-Lys", "Pizzeria au centre de Neuchâtel", "http://www.pizzeria-neuchatel.ch/", "Rue du Bassin 10", city, typeSuisse);
         typeSuisse.getRestaurants().add(restaurant);
-        restaurant.getEvaluations().add(new BasicEvaluation(1, new Date(), restaurant, true, "1.2.3.4"));
-        restaurant.getEvaluations().add(new BasicEvaluation(2, new Date(), restaurant, true, "1.2.3.5"));
-        restaurant.getEvaluations().add(new BasicEvaluation(3, new Date(), restaurant, false, "1.2.3.6"));
+        restaurant.getEvaluations().add(new BasicEvaluation(null, new Date(), restaurant, true, "1.2.3.4"));
+        restaurant.getEvaluations().add(new BasicEvaluation(null, new Date(), restaurant, true, "1.2.3.5"));
+        restaurant.getEvaluations().add(new BasicEvaluation(null, new Date(), restaurant, false, "1.2.3.6"));
 
-        CompleteEvaluation ce = new CompleteEvaluation(1, new Date(), restaurant, "Génial !", "Toto");
-        ce.getGrades().add(new Grade(1, 4, ce, critService));
-        ce.getGrades().add(new Grade(2, 5, ce, critCuisine));
-        ce.getGrades().add(new Grade(3, 4, ce, critCadre));
+        CompleteEvaluation ce = new CompleteEvaluation(null, new Date(), restaurant, "Génial !", "Toto");
+        ce.getGrades().add(new Grade(null, 4, ce, critService));
+        ce.getGrades().add(new Grade(null, 5, ce, critCuisine));
+        ce.getGrades().add(new Grade(null, 4, ce, critCadre));
         restaurant.getEvaluations().add(ce);
 
-        ce = new CompleteEvaluation(2, new Date(), restaurant, "Très bon", "Titi");
-        ce.getGrades().add(new Grade(4, 4, ce, critService));
-        ce.getGrades().add(new Grade(5, 4, ce, critCuisine));
-        ce.getGrades().add(new Grade(6, 4, ce, critCadre));
+        ce = new CompleteEvaluation(null, new Date(), restaurant, "Très bon", "Titi");
+        ce.getGrades().add(new Grade(null, 4, ce, critService));
+        ce.getGrades().add(new Grade(null, 4, ce, critCuisine));
+        ce.getGrades().add(new Grade(null, 4, ce, critCadre));
         restaurant.getEvaluations().add(ce);
 
         restaurants.add(restaurant);
 
         restaurant = new Restaurant(2, "La Maison du Prussien", "Restaurant gastronomique renommé de Neuchâtel", "www.hotel-prussien.ch/‎", "Rue des Tunnels 11", city, typeGastro);
         typeGastro.getRestaurants().add(restaurant);
-        restaurant.getEvaluations().add(new BasicEvaluation(4, new Date(), restaurant, true, "1.2.3.7"));
-        restaurant.getEvaluations().add(new BasicEvaluation(5, new Date(), restaurant, true, "1.2.3.8"));
-        restaurant.getEvaluations().add(new BasicEvaluation(6, new Date(), restaurant, true, "1.2.3.9"));
-        ce = new CompleteEvaluation(3, new Date(), restaurant, "Un régal !", "Dupont");
-        ce.getGrades().add(new Grade(7, 5, ce, critService));
-        ce.getGrades().add(new Grade(8, 5, ce, critCuisine));
-        ce.getGrades().add(new Grade(9, 5, ce, critCadre));
+        restaurant.getEvaluations().add(new BasicEvaluation(null, new Date(), restaurant, true, "1.2.3.7"));
+        restaurant.getEvaluations().add(new BasicEvaluation(null, new Date(), restaurant, true, "1.2.3.8"));
+        restaurant.getEvaluations().add(new BasicEvaluation(null, new Date(), restaurant, true, "1.2.3.9"));
+        ce = new CompleteEvaluation(null, new Date(), restaurant, "Un régal !", "Dupont");
+        ce.getGrades().add(new Grade(null, 5, ce, critService));
+        ce.getGrades().add(new Grade(null, 5, ce, critCuisine));
+        ce.getGrades().add(new Grade(null, 5, ce, critCadre));
         restaurant.getEvaluations().add(ce);
 
-        ce = new CompleteEvaluation(2, new Date(), restaurant, "Rien à dire, le top !", "Dupasquier");
-        ce.getGrades().add(new Grade(10, 5, ce, critService));
-        ce.getGrades().add(new Grade(11, 5, ce, critCuisine));
-        ce.getGrades().add(new Grade(12, 5, ce, critCadre));
+        ce = new CompleteEvaluation(null, new Date(), restaurant, "Rien à dire, le top !", "Dupasquier");
+        ce.getGrades().add(new Grade(null, 5, ce, critService));
+        ce.getGrades().add(new Grade(null, 5, ce, critCuisine));
+        ce.getGrades().add(new Grade(null, 5, ce, critCadre));
         restaurant.getEvaluations().add(ce);
 
         restaurants.add(restaurant);
