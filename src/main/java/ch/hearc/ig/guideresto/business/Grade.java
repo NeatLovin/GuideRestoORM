@@ -7,6 +7,11 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "NOTES")
+@NamedQueries({
+    @NamedQuery(name = "Grade.findAll", query = "select g from Grade g order by g.id"),
+    @NamedQuery(name = "Grade.findByEvaluation", query = "select g from Grade g where g.evaluation.id = :evaluationId order by g.id"),
+    @NamedQuery(name = "Grade.findByCriteria", query = "select g from Grade g where g.criteria.id = :criteriaId order by g.id")
+})
 public class Grade implements IBusinessObject {
 
     @Id

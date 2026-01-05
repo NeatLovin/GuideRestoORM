@@ -48,7 +48,7 @@ public class GradeMapper extends AbstractMapper<Grade> {
         if (!cache.isEmpty()) {
             return new LinkedHashSet<>(cache.values());
         }
-        TypedQuery<Grade> query = em.createQuery("SELECT g FROM Grade g ORDER BY g.id", Grade.class);
+        TypedQuery<Grade> query = em.createNamedQuery("Grade.findAll", Grade.class);
         List<Grade> resultList = query.getResultList();
         Set<Grade> result = new LinkedHashSet<>(resultList);
         for (Grade grade : result) {
@@ -93,8 +93,8 @@ public class GradeMapper extends AbstractMapper<Grade> {
 
     // Méthodes de recherche utiles
     public Set<Grade> findByEvaluationId(int evaluationId) {
-        TypedQuery<Grade> query = em.createQuery("SELECT g FROM Grade g WHERE g.evaluation.id = :evalId ORDER BY g.id", Grade.class);
-        query.setParameter("evalId", evaluationId);
+        TypedQuery<Grade> query = em.createNamedQuery("Grade.findByEvaluation", Grade.class);
+        query.setParameter("evaluationId", evaluationId);
         List<Grade> resultList = query.getResultList();
         Set<Grade> result = new LinkedHashSet<>(resultList);
         for (Grade grade : result) {
@@ -111,8 +111,8 @@ public class GradeMapper extends AbstractMapper<Grade> {
     }
 
     public Set<Grade> findByCriteriaId(int criteriaId) {
-        TypedQuery<Grade> query = em.createQuery("SELECT g FROM Grade g WHERE g.criteria.id = :critId ORDER BY g.id", Grade.class);
-        query.setParameter("critId", criteriaId);
+        TypedQuery<Grade> query = em.createNamedQuery("Grade.findByCriteria", Grade.class);
+        query.setParameter("criteriaId", criteriaId);
         List<Grade> resultList = query.getResultList();
         Set<Grade> result = new LinkedHashSet<>(resultList);
         for (Grade grade : result) {
