@@ -27,7 +27,7 @@ public class EvaluationCriteria implements IBusinessObject {
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @OneToMany(mappedBy = "criteria", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "criteria", cascade = CascadeType.PERSIST)
     private Set<Grade> grades = new HashSet<>();
 
     public EvaluationCriteria() {

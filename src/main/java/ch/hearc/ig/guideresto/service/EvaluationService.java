@@ -22,7 +22,10 @@ public class EvaluationService {
     }
 
     /**
-     * Crée une evaluation basique en transaction
+     * Crée une evaluation basique en transaction.
+     *
+     * Grâce à la cascade CascadeType.ALL sur Restaurant.evaluations,
+     * l'évaluation basique sera automatiquement persistée quand le restaurant parent est synchronisé.
      */
     public BasicEvaluation createBasicEvaluation(BasicEvaluation evaluation) {
         EntityTransaction tx = em.getTransaction();
@@ -30,6 +33,7 @@ public class EvaluationService {
             tx.begin();
             // Persist the basic evaluation
             em.persist(evaluation);
+            em.flush();
             tx.commit();
             return evaluation;
         } catch (RuntimeException e) {
@@ -41,12 +45,18 @@ public class EvaluationService {
     /**
      * Crée une évaluation complète et ses notes (grades) dans une transaction.
      * Simplifié : persister l'évaluation et laisser JPA cascader les grades.
+     *
+     * Grâce à la cascade CascadeType.ALL sur CompleteEvaluation.grades,
+     * tous les grades associés seront automatiquement persistés lors de la sauvegarde de l'évaluation.
      */
     public CompleteEvaluation createCompleteEvaluation(CompleteEvaluation evaluation) {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
+            // Persister l'évaluation complète - ses grades seront cascadés automatiquement
             em.persist(evaluation);
+            // Flush pour s'assurer que tout est bien inséré dans la BD
+            em.flush();
             tx.commit();
             return evaluation;
         } catch (RuntimeException e) {

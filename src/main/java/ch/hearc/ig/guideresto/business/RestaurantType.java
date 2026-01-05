@@ -28,7 +28,7 @@ public class RestaurantType implements IBusinessObject {
     @Column(name = "DESCRIPTION", nullable = false)
     private String description;
 
-    @OneToMany(mappedBy = "type", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "type", cascade = CascadeType.PERSIST)
     private Set<Restaurant> restaurants = new HashSet<>();
 
     public RestaurantType() {

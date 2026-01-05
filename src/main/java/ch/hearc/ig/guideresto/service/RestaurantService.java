@@ -28,6 +28,9 @@ public class RestaurantService {
     /**
      * Crée un restaurant avec sa localisation et sa ville (si la ville n'existe pas déjà).
      * Toute l'opération est transactionnelle.
+     *
+     * Grâce à la configuration des cascades dans Restaurant (@OneToMany cascade),
+     * les évaluations associées seront gérées automatiquement par Hibernate.
      */
     public Restaurant createRestaurant(Restaurant restaurant, Localisation localisation, City city) {
         EntityTransaction tx = em.getTransaction();
@@ -38,12 +41,16 @@ public class RestaurantService {
                 .filter(c -> c.getZipCode().equals(city.getZipCode()) && c.getCityName().equalsIgnoreCase(city.getCityName()))
                 .findFirst().orElse(null);
             if (existingCity == null) {
-                cityMapper.create(city);
+                // Persister la nouvelle ville via JPA
+                em.persist(city);
+                em.flush();
                 existingCity = city;
             }
             localisation.setCity(existingCity);
             restaurant.setAddress(localisation);
-            restaurantMapper.create(restaurant);
+            // Persister le restaurant - les cascades JPA s'occuperont des évaluations
+            em.persist(restaurant);
+            em.flush();
             tx.commit();
             return restaurant;
         } catch (Exception e) {
@@ -86,6 +93,8 @@ public class RestaurantService {
                 locked.getAddress().setStreet(restaurant.getAddress().getStreet());
                 locked.getAddress().setCity(restaurant.getAddress().getCity());
             }
+            // em.flush() pour s'assurer que les cascades sont bien traitées
+            em.flush();
             tx.commit();
         } catch (PessimisticLockException | LockTimeoutException e) {
             if (tx.isActive()) tx.rollback();
@@ -110,7 +119,9 @@ public class RestaurantService {
             props.put("jakarta.persistence.lock.timeout", 0);
             Restaurant locked = em.find(Restaurant.class, restaurant.getId(), LockModeType.PESSIMISTIC_WRITE, props);
             if (locked == null) throw new RuntimeException("Restaurant non trouvé pour suppression.");
+            // em.remove utilise les cascades pour supprimer aussi les évaluations associées
             em.remove(locked);
+            em.flush();
             tx.commit();
         } catch (PessimisticLockException | LockTimeoutException e) {
             if (tx.isActive()) tx.rollback();
