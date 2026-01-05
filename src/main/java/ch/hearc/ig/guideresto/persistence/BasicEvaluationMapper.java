@@ -1,9 +1,6 @@
 package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.BasicEvaluation;
-import ch.hearc.ig.guideresto.business.Restaurant;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -17,7 +14,6 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
     public BasicEvaluationMapper(EntityManager em) {
         this.em = em;
     }
-    private static final Logger logger = LogManager.getLogger(BasicEvaluationMapper.class);
 
 
 
@@ -47,7 +43,7 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
         if (!cache.isEmpty()) {
             return new LinkedHashSet<>(cache.values());
         }
-        TypedQuery<BasicEvaluation> query = em.createQuery("SELECT b FROM BasicEvaluation b ORDER BY b.id", BasicEvaluation.class);
+        TypedQuery<BasicEvaluation> query = em.createNamedQuery("BasicEvaluation.findAll", BasicEvaluation.class);
         List<BasicEvaluation> resultList = query.getResultList();
         Set<BasicEvaluation> res = new LinkedHashSet<>(resultList);
         for (BasicEvaluation be : res) {
@@ -91,8 +87,8 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
     }
 
     public Set<BasicEvaluation> findByRestaurantId(int restaurantId) {
-        TypedQuery<BasicEvaluation> query = em.createQuery("SELECT b FROM BasicEvaluation b WHERE b.restaurant.id = :restId ORDER BY b.id", BasicEvaluation.class);
-        query.setParameter("restId", restaurantId);
+        TypedQuery<BasicEvaluation> query = em.createNamedQuery("BasicEvaluation.findByRestaurant", BasicEvaluation.class);
+        query.setParameter("restaurantId", restaurantId);
         List<BasicEvaluation> resultList = query.getResultList();
         Set<BasicEvaluation> res = new LinkedHashSet<>(resultList);
         for (BasicEvaluation be : res) {

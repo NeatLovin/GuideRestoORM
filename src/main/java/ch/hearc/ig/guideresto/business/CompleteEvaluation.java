@@ -11,6 +11,11 @@ import java.util.Set;
 
 @Entity
 @Table(name = "COMMENTAIRES")
+@NamedQueries({
+    @NamedQuery(name = "CompleteEvaluation.findAll", query = "select c from CompleteEvaluation c order by c.id"),
+    @NamedQuery(name = "CompleteEvaluation.findByRestaurant", query = "select c from CompleteEvaluation c where c.restaurant.id = :restaurantId order by c.id"),
+    @NamedQuery(name = "CompleteEvaluation.findByUsername", query = "select c from CompleteEvaluation c where upper(c.username) = :username order by c.id")
+})
 public class CompleteEvaluation extends Evaluation {
 
     @Lob

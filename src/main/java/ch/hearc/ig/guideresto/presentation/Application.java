@@ -1,12 +1,7 @@
 package ch.hearc.ig.guideresto.presentation;
 
 import ch.hearc.ig.guideresto.business.*;
-import ch.hearc.ig.guideresto.persistence.CityMapper;
-import ch.hearc.ig.guideresto.persistence.RestaurantMapper;
-import ch.hearc.ig.guideresto.persistence.RestaurantTypeMapper;
-import ch.hearc.ig.guideresto.persistence.GradeMapper;
-import ch.hearc.ig.guideresto.persistence.CompleteEvaluationMapper;
-import ch.hearc.ig.guideresto.persistence.EvaluationCriteriaMapper;
+import ch.hearc.ig.guideresto.persistence.*;
 import ch.hearc.ig.guideresto.service.RestaurantService;
 import ch.hearc.ig.guideresto.service.CityService;
 import ch.hearc.ig.guideresto.service.RestaurantTypeService;
@@ -49,12 +44,13 @@ public class Application {
         GradeMapper gradeMapper = new GradeMapper(em);
         CompleteEvaluationMapper completeEvaluationMapper = new CompleteEvaluationMapper(em, gradeMapper);
         EvaluationCriteriaMapper evaluationCriteriaMapper = new EvaluationCriteriaMapper(em);
+        BasicEvaluationMapper basicEvaluationMapper = new BasicEvaluationMapper(em);
 
         // Instanciation des services
         CityService cityService = new CityService(em, cityMapper);
         RestaurantTypeService typeService = new RestaurantTypeService(em, typeMapper);
         restaurantService = new RestaurantService(em, cityMapper, restaurantMapper);
-        evaluationService = new EvaluationService(em, completeEvaluationMapper, gradeMapper); // même em
+        evaluationService = new EvaluationService(em, completeEvaluationMapper, gradeMapper, basicEvaluationMapper);
         criteriaService = new EvaluationCriteriaService(em, evaluationCriteriaMapper);
 
         System.out.println("Bienvenue dans GuideResto ! Que souhaitez-vous faire ?");

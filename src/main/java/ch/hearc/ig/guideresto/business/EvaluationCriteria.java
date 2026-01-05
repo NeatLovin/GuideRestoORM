@@ -31,7 +31,7 @@ public class EvaluationCriteria implements IBusinessObject {
     private Set<Grade> grades = new HashSet<>();
 
     public EvaluationCriteria() {
-        this(null, null);
+        this(null, null, null);
     }
 
     public EvaluationCriteria(String name, String description) {

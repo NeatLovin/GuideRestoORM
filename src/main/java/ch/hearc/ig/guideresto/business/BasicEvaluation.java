@@ -9,6 +9,10 @@ import ch.hearc.ig.guideresto.persistence.jpa.BooleanConverter;
  */
 @Entity
 @Table(name = "LIKES")
+@NamedQueries({
+    @NamedQuery(name = "BasicEvaluation.findAll", query = "select b from BasicEvaluation b order by b.id"),
+    @NamedQuery(name = "BasicEvaluation.findByRestaurant", query = "select b from BasicEvaluation b where b.restaurant.id = :restaurantId order by b.id")
+})
 public class BasicEvaluation extends Evaluation {
 
     @Convert(converter = BooleanConverter.class)

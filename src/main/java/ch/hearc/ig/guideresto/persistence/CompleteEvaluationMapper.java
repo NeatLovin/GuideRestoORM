@@ -56,7 +56,7 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
         if (!cache.isEmpty()) {
             return new LinkedHashSet<>(cache.values());
         }
-        TypedQuery<CompleteEvaluation> query = em.createQuery("SELECT c FROM CompleteEvaluation c ORDER BY c.id", CompleteEvaluation.class);
+        TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findAll", CompleteEvaluation.class);
         List<CompleteEvaluation> resultList = query.getResultList();
         Set<CompleteEvaluation> result = new LinkedHashSet<>(resultList);
         for (CompleteEvaluation evaluation : result) {
@@ -103,8 +103,8 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
 
     // Finders additionnels
     public Set<CompleteEvaluation> findByRestaurantId(int restaurantId) {
-        TypedQuery<CompleteEvaluation> query = em.createQuery("SELECT c FROM CompleteEvaluation c WHERE c.restaurant.id = :restId ORDER BY c.id", CompleteEvaluation.class);
-        query.setParameter("restId", restaurantId);
+        TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findByRestaurant", CompleteEvaluation.class);
+        query.setParameter("restaurantId", restaurantId);
         List<CompleteEvaluation> resultList = query.getResultList();
         Set<CompleteEvaluation> result = new LinkedHashSet<>(resultList);
         for (CompleteEvaluation evaluation : result) {
@@ -116,8 +116,8 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
 
     public Set<CompleteEvaluation> findByUsername(String username) {
         if (username == null) return new LinkedHashSet<>();
-        TypedQuery<CompleteEvaluation> query = em.createQuery("SELECT c FROM CompleteEvaluation c WHERE UPPER(c.username) = :uname ORDER BY c.id", CompleteEvaluation.class);
-        query.setParameter("uname", username.toUpperCase());
+        TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findByUsername", CompleteEvaluation.class);
+        query.setParameter("username", username.toUpperCase());
         List<CompleteEvaluation> resultList = query.getResultList();
         Set<CompleteEvaluation> result = new LinkedHashSet<>(resultList);
         for (CompleteEvaluation evaluation : result) {
