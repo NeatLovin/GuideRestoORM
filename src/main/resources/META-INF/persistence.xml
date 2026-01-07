@@ -28,6 +28,21 @@
             
             <!-- Specific configuration for Hibernate -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect" />
+            
+            <!-- Configuration pour les verrous pessimistes -->
+            <!-- Désactiver l'autocommit pour permettre les verrous de fonctionner correctement -->
+            <property name="hibernate.connection.autocommit" value="false" />
+            
+            <!-- Niveau d'isolation transactionnel pour supporter les verrous pessimistes -->
+            <!-- READ_COMMITTED est recommandé pour Oracle avec verrous pessimistes -->
+            <property name="hibernate.connection.isolation" value="2" />
+            
+            <!-- Configuration du timeout par défaut pour les verrous (en millisecondes) -->
+            <!-- -1 signifie pas de timeout, 0 signifie échec immédiat si verrou non disponible -->
+            <property name="jakarta.persistence.lock.timeout" value="0" />
+            
+            <!-- S'assurer que les entités sont relues après les opérations de verrouillage -->
+            <property name="hibernate.jpa.compliance.query" value="true" />
         </properties>
     </persistence-unit>
 </persistence>

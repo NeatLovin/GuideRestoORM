@@ -451,17 +451,25 @@ public class Application {
      * @param restaurant Le restaurant à modifier
      */
     private static void editRestaurant(Restaurant restaurant) {
-        System.out.println("Edition d'un restaurant !");
-        System.out.println("Nouveau nom : ");
-        restaurant.setName(readString());
-        System.out.println("Nouvelle description : ");
-        restaurant.setDescription(readString());
-        System.out.println("Nouveau site web : ");
-        restaurant.setWebsite(readString());
+        // IMPORTANT : on acquiert le verrou pessimiste AVANT la saisie utilisateur,
+        // sinon on ne bloque jamais les autres sessions pendant l'édition.
+        RestaurantService.RestaurantEditSession session = null;
         try {
-            restaurantService.updateRestaurant(restaurant);
+            session = restaurantService.beginEditRestaurant(restaurant.getId());
+            Restaurant locked = session.getLockedRestaurant();
+
+            System.out.println("Edition d'un restaurant !");
+            System.out.println("Nouveau nom : ");
+            locked.setName(readString());
+            System.out.println("Nouvelle description : ");
+            locked.setDescription(readString());
+            System.out.println("Nouveau site web : ");
+            locked.setWebsite(readString());
+
+            session.commit();
             System.out.println("Merci, le restaurant a bien été modifié !");
         } catch (RuntimeException e) {
+            if (session != null) session.rollback();
             System.out.println(e.getMessage());
         }
     }
@@ -473,13 +481,19 @@ public class Application {
      * @param restaurant Le restaurant dont l'adresse doit être mise à jour.
      */
     private static void editRestaurantAddress(Restaurant restaurant) {
-        System.out.println("Edition de l'adresse d'un restaurant !");
-        System.out.println("Nouvelle rue : ");
-        restaurant.getAddress().setStreet(readString());
+        RestaurantService.RestaurantEditSession session = null;
         try {
-            restaurantService.updateRestaurant(restaurant);
+            session = restaurantService.beginEditRestaurant(restaurant.getId());
+            Restaurant locked = session.getLockedRestaurant();
+
+            System.out.println("Edition de l'adresse d'un restaurant !");
+            System.out.println("Nouvelle rue : ");
+            locked.getAddress().setStreet(readString());
+
+            session.commit();
             System.out.println("L'adresse a bien été modifiée ! Merci !");
         } catch (RuntimeException e) {
+            if (session != null) session.rollback();
             System.out.println(e.getMessage());
         }
     }

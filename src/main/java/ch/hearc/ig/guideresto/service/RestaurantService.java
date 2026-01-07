@@ -19,6 +19,47 @@ public class RestaurantService {
     private final CityMapper cityMapper;
     private final RestaurantMapper restaurantMapper;
 
+    /**
+     * Petite “session” d'édition qui garde une transaction ouverte et un verrou pessimiste actif
+     * pendant que l'utilisateur saisit ses modifications.
+     */
+    public static final class RestaurantEditSession {
+        private final EntityManager em;
+        private final EntityTransaction tx;
+        private final Restaurant locked;
+        private boolean closed;
+
+        private RestaurantEditSession(EntityManager em, EntityTransaction tx, Restaurant locked) {
+            this.em = em;
+            this.tx = tx;
+            this.locked = locked;
+        }
+
+        public Restaurant getLockedRestaurant() {
+            return locked;
+        }
+
+        public void commit() {
+            if (closed) return;
+            try {
+                em.flush();
+                tx.commit();
+            } finally {
+                closed = true;
+            }
+        }
+
+        public void rollback() {
+            if (closed) return;
+            try {
+                if (tx.isActive()) tx.rollback();
+            } finally {
+                em.clear();
+                closed = true;
+            }
+        }
+    }
+
     public RestaurantService(EntityManager em, CityMapper cityMapper, RestaurantMapper restaurantMapper) {
         this.em = em;
         this.cityMapper = cityMapper;
@@ -78,6 +119,12 @@ public class RestaurantService {
     public void updateRestaurant(Restaurant restaurant) {
         EntityTransaction tx = em.getTransaction();
         try {
+            // IMPORTANT : Détacher l'entité du contexte de persistance
+            // Sinon em.find() retournera l'instance déjà gérée SANS acquérir de verrou !
+            if (em.contains(restaurant)) {
+                em.detach(restaurant);
+            }
+            
             tx.begin();
             // Verrouillage pessimiste avec timeout fail-fast
             var props = new HashMap<String, Object>();
@@ -111,9 +158,47 @@ public class RestaurantService {
         }
     }
 
+    /**
+     * Démarre une transaction et acquiert un verrou pessimiste sur le restaurant.
+     * Le verrou reste actif tant que {@link RestaurantEditSession#commit()} ou {@link RestaurantEditSession#rollback()} n'est pas appelé.
+     */
+    public RestaurantEditSession beginEditRestaurant(int restaurantId) {
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+
+            var props = new HashMap<String, Object>();
+            props.put("jakarta.persistence.lock.timeout", 0);
+
+            Restaurant locked = em.find(Restaurant.class, restaurantId, LockModeType.PESSIMISTIC_WRITE, props);
+            if (locked == null) {
+                throw new RuntimeException("Restaurant non trouvé pour modification.");
+            }
+
+            return new RestaurantEditSession(em, tx, locked);
+        } catch (PessimisticLockException | LockTimeoutException e) {
+            if (tx.isActive()) tx.rollback();
+            em.clear();
+            throw new RuntimeException(
+                "Conflit de modification: ce restaurant est en cours de modification par un autre utilisateur. Rechargez la fiche et réessayez.",
+                e
+            );
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            em.clear();
+            throw e;
+        }
+    }
+
     public void deleteRestaurant(Restaurant restaurant) {
         EntityTransaction tx = em.getTransaction();
         try {
+            // IMPORTANT : Détacher l'entité du contexte de persistance
+            // Sinon em.find() retournera l'instance déjà gérée SANS acquérir de verrou !
+            if (em.contains(restaurant)) {
+                em.detach(restaurant);
+            }
+            
             tx.begin();
             var props = new HashMap<String, Object>();
             props.put("jakarta.persistence.lock.timeout", 0);
