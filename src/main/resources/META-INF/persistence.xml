@@ -20,16 +20,14 @@
         <class>ch.hearc.ig.guideresto.business.RestaurantType</class>
 
         <properties>
-            <!-- Database connection settings -->
-            <property name="jakarta.persistence.jdbc.driver" value="oracle.jdbc.OracleDriver" />
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:oracle:thin:@db.ig.he-arc.ch:1521:ens" />
-            <property name="jakarta.persistence.jdbc.user" value="NGADHNJI_MUZLIJAJ" />
-            <property name="jakarta.persistence.jdbc.password" value="NGADHNJI_MUZLIJAJ" />
+            <!-- Database connection settings are loaded from hibernate.properties -->
+            <!-- Use hibernate.properties.template to create your own hibernate.properties file -->
+            
+            <!-- Connection provider -->
+            <property name="hibernate.connection.provider_class" value="org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl" />
+            
             <!-- Specific configuration for Hibernate -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect" />
-            <property name="hibernate.show_sql" value="true" />
-            <property name="hibernate.format_sql"          value="true"/>
-            <property name="hibernate.generate_statistics" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>
