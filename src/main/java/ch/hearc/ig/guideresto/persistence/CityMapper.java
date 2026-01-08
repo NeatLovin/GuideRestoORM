@@ -8,6 +8,12 @@ import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * Data Mapper JPA pour {@link City}.
+ * Maintient une Identity Map (thread-local) afin de garantir une instance par
+ * id.
+ * Expose des recherches par zip/nom basées sur des NamedQueries.
+ */
 public class CityMapper extends AbstractMapper<City> {
     private final EntityManager em;
 
@@ -75,6 +81,9 @@ public class CityMapper extends AbstractMapper<City> {
         return false;
     }
 
+    /**
+     * Recherche des villes par NPA via une NamedQuery.
+     */
     public Set<City> findByZipCode(String zipCode) {
         if (zipCode == null)
             return new LinkedHashSet<>();
@@ -88,6 +97,10 @@ public class CityMapper extends AbstractMapper<City> {
         return result;
     }
 
+    /**
+     * Recherche des villes dont le nom contient la chaîne donnée (case-insensitive
+     * côté requête).
+     */
     public Set<City> findByName(String namePart) {
         if (namePart == null)
             return new LinkedHashSet<>();

@@ -8,6 +8,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Data Mapper JPA pour {@link Restaurant}.
+ * Utilise une Identity Map (thread-local via {@link AbstractMapper}) pour
+ * garantir une instance par id.
+ * Fournit des recherches par nom/ville et une requête JPQL typée.
+ */
 public class RestaurantMapper extends AbstractMapper<Restaurant> {
     private final EntityManager em;
 
@@ -101,6 +107,9 @@ public class RestaurantMapper extends AbstractMapper<Restaurant> {
         return restaurants;
     }
 
+    /**
+     * Recherche les restaurants d'un type, triés par nom (requête JPQL explicite).
+     */
     public Set<Restaurant> findByType(int typeId) {
         TypedQuery<Restaurant> query = em
                 .createQuery("SELECT r FROM Restaurant r WHERE r.type.id = :typeId ORDER BY r.name", Restaurant.class);

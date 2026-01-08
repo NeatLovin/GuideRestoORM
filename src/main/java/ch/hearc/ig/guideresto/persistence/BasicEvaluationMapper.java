@@ -8,6 +8,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Data Mapper JPA pour {@link BasicEvaluation}.
+ * Utilise une Identity Map (thread-local via {@link AbstractMapper}) pour
+ * réutiliser les instances par id.
+ * Les recherches spécifiques s'appuient sur des NamedQueries.
+ */
 public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
     private final EntityManager em;
 
@@ -75,6 +81,9 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
         return false;
     }
 
+    /**
+     * Recherche les évaluations d'un restaurant via une NamedQuery.
+     */
     public Set<BasicEvaluation> findByRestaurantId(int restaurantId) {
         TypedQuery<BasicEvaluation> query = em.createNamedQuery("BasicEvaluation.findByRestaurant",
                 BasicEvaluation.class);

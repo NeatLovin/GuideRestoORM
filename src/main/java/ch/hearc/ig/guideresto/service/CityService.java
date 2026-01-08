@@ -6,6 +6,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import java.util.Set;
 
+/**
+ * Service applicatif pour gérer les {@link City}.
+ * Encapsule les écritures dans une transaction JPA (begin/commit/rollback).
+ * Les lectures délèguent au {@link CityMapper}.
+ */
 public class CityService {
     private final EntityManager em;
     private final CityMapper cityMapper;
@@ -23,7 +28,8 @@ public class CityService {
             tx.commit();
             return city;
         } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
+            if (tx.isActive())
+                tx.rollback();
             throw e;
         }
     }
@@ -36,7 +42,8 @@ public class CityService {
             tx.commit();
             return city;
         } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
+            if (tx.isActive())
+                tx.rollback();
             throw e;
         }
     }
@@ -49,7 +56,8 @@ public class CityService {
             tx.commit();
             return result;
         } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
+            if (tx.isActive())
+                tx.rollback();
             throw e;
         }
     }

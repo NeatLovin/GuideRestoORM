@@ -6,6 +6,13 @@ import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * Data Mapper JPA pour
+ * {@link ch.hearc.ig.guideresto.business.EvaluationCriteria}.
+ * Utilise une Identity Map (thread-local via {@link AbstractMapper}) pour
+ * garantir une instance par id.
+ * Fournit des recherches par nom via NamedQuery.
+ */
 public class EvaluationCriteriaMapper extends AbstractMapper<ch.hearc.ig.guideresto.business.EvaluationCriteria> {
     private final EntityManager em;
 
@@ -76,6 +83,10 @@ public class EvaluationCriteriaMapper extends AbstractMapper<ch.hearc.ig.guidere
         return false;
     }
 
+    /**
+     * Recherche des critères dont le nom contient la chaîne donnée (normalisation
+     * en majuscules).
+     */
     public Set<ch.hearc.ig.guideresto.business.EvaluationCriteria> findByName(String namePart) {
         if (namePart == null)
             return new LinkedHashSet<>();

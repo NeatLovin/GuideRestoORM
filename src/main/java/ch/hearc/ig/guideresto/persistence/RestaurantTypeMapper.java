@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * Data Mapper JPA pour {@link RestaurantType}.
+ * Utilise une Identity Map (thread-local) pour réutiliser les instances par id.
+ * Expose des recherches par nom via NamedQuery.
+ */
 public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
     private final EntityManager em;
 
@@ -38,6 +43,10 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
         return result;
     }
 
+    /**
+     * Recherche des types dont le nom contient la chaîne donnée (normalisation en
+     * majuscules).
+     */
     public Set<RestaurantType> findByName(String namePart) {
         if (namePart == null)
             return new LinkedHashSet<>();

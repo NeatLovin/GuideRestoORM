@@ -7,6 +7,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Data Mapper JPA pour {@link CompleteEvaluation}.
+ * Hydrate explicitement la collection de {@code grades} via {@link GradeMapper}
+ * après chargement.
+ * Utilise une Identity Map (thread-local) pour réutiliser les instances par id.
+ */
 public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation> {
     private final EntityManager em;
     private final GradeMapper gradeMapper;
@@ -81,6 +87,9 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
     }
 
     // Finders additionnels
+    /**
+     * Recherche les évaluations d'un restaurant et hydrate leurs grades.
+     */
     public Set<CompleteEvaluation> findByRestaurantId(int restaurantId) {
         TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findByRestaurant",
                 CompleteEvaluation.class);
@@ -94,6 +103,10 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
         return result;
     }
 
+    /**
+     * Recherche les évaluations par utilisateur (normalisation en majuscules) et
+     * hydrate leurs grades.
+     */
     public Set<CompleteEvaluation> findByUsername(String username) {
         if (username == null)
             return new LinkedHashSet<>();

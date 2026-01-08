@@ -10,6 +10,12 @@ import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * Data Mapper JPA pour {@link Grade}.
+ * Utilise une Identity Map (thread-local) pour réutiliser les instances par id.
+ * Propose des finders par évaluation/critère via NamedQueries et une requête
+ * JPQL ad-hoc.
+ */
 public class GradeMapper extends AbstractMapper<Grade> {
     private final EntityManager em;
 
@@ -115,6 +121,10 @@ public class GradeMapper extends AbstractMapper<Grade> {
         return findByCriteriaId(criteria.getId());
     }
 
+    /**
+     * Retourne le grade unique pour (évaluation, critère) ou {@code null} si
+     * absent.
+     */
     public Grade findOneByEvaluationAndCriteria(int evaluationId, int criteriaId) {
         TypedQuery<Grade> query = em.createQuery(
                 "SELECT g FROM Grade g WHERE g.evaluation.id = :evalId AND g.criteria.id = :critId", Grade.class);

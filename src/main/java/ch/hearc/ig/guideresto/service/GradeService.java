@@ -6,6 +6,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import java.util.Set;
 
+/**
+ * Service applicatif pour gérer les {@link Grade}.
+ * Encapsule les écritures dans une transaction JPA (begin/commit/rollback).
+ * Les lectures délèguent au {@link GradeMapper}.
+ */
 public class GradeService {
     private final EntityManager em;
     private final GradeMapper gradeMapper;
@@ -23,7 +28,8 @@ public class GradeService {
             tx.commit();
             return grade;
         } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
+            if (tx.isActive())
+                tx.rollback();
             throw e;
         }
     }
@@ -36,7 +42,8 @@ public class GradeService {
             tx.commit();
             return grade;
         } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
+            if (tx.isActive())
+                tx.rollback();
             throw e;
         }
     }
@@ -49,7 +56,8 @@ public class GradeService {
             tx.commit();
             return result;
         } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
+            if (tx.isActive())
+                tx.rollback();
             throw e;
         }
     }
@@ -62,4 +70,3 @@ public class GradeService {
         return gradeMapper.findById(id);
     }
 }
-
