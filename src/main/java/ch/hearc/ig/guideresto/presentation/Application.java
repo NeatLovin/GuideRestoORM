@@ -657,10 +657,3 @@ public class Application {
     }
 
 }
-
-// Test manuel concurrence (README) :
-// Lancez deux instances de l'application, éditez ou supprimez le même
-// restaurant en même temps.
-// Une seule modification/suppression passera, l'autre affichera :
-// "Conflit de modification: ce restaurant est en cours de modification par un
-// autre utilisateur. Rechargez la fiche et réessayez."
