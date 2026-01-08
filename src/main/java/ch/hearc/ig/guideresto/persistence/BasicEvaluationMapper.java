@@ -15,19 +15,11 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
         this.em = em;
     }
 
-
-
-    @Override
-    protected String getSequenceQuery() { return null; }
-    @Override
-    protected String getExistsQuery() { return null; }
-    @Override
-    protected String getCountQuery() { return null; }
-
     @Override
     public BasicEvaluation findById(int id) {
         BasicEvaluation cached = findInCache(id);
-        if (cached != null) return cached;
+        if (cached != null)
+            return cached;
         BasicEvaluation evaluation = em.find(BasicEvaluation.class, id);
         if (evaluation != null) {
             addToCache(evaluation);
@@ -37,12 +29,6 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
 
     @Override
     public Set<BasicEvaluation> findAll() {
-        if (!identityMap().isEmpty()) {
-            return new LinkedHashSet<>(identityMap().values());
-        }
-        if (!cache.isEmpty()) {
-            return new LinkedHashSet<>(cache.values());
-        }
         TypedQuery<BasicEvaluation> query = em.createNamedQuery("BasicEvaluation.findAll", BasicEvaluation.class);
         List<BasicEvaluation> resultList = query.getResultList();
         Set<BasicEvaluation> res = new LinkedHashSet<>(resultList);
@@ -54,7 +40,8 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
 
     @Override
     public BasicEvaluation create(BasicEvaluation evaluation) {
-        if (evaluation == null) return null;
+        if (evaluation == null)
+            return null;
         em.persist(evaluation);
         addToCache(evaluation);
         return evaluation;
@@ -62,7 +49,8 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
 
     @Override
     public boolean update(BasicEvaluation evaluation) {
-        if (evaluation == null || evaluation.getId() == null) return false;
+        if (evaluation == null || evaluation.getId() == null)
+            return false;
         em.merge(evaluation);
         addToCache(evaluation);
         return true;
@@ -70,7 +58,8 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
 
     @Override
     public boolean delete(BasicEvaluation evaluation) {
-        if (evaluation == null || evaluation.getId() == null) return false;
+        if (evaluation == null || evaluation.getId() == null)
+            return false;
         BasicEvaluation managed = em.contains(evaluation) ? evaluation : em.merge(evaluation);
         em.remove(managed);
         removeFromCache(evaluation.getId());
@@ -87,7 +76,8 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
     }
 
     public Set<BasicEvaluation> findByRestaurantId(int restaurantId) {
-        TypedQuery<BasicEvaluation> query = em.createNamedQuery("BasicEvaluation.findByRestaurant", BasicEvaluation.class);
+        TypedQuery<BasicEvaluation> query = em.createNamedQuery("BasicEvaluation.findByRestaurant",
+                BasicEvaluation.class);
         query.setParameter("restaurantId", restaurantId);
         List<BasicEvaluation> resultList = query.getResultList();
         Set<BasicEvaluation> res = new LinkedHashSet<>(resultList);

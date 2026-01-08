@@ -16,23 +16,6 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
         this.gradeMapper = gradeMapper;
     }
 
-    // Requêtes pour COMMENTAIRES
-
-    @Override
-    protected String getSequenceQuery() {
-        return null;
-    }
-
-    @Override
-    protected String getExistsQuery() {
-        return null;
-    }
-
-    @Override
-    protected String getCountQuery() {
-        return null;
-    }
-
     @Override
     public CompleteEvaluation findById(int id) {
         CompleteEvaluation cached = findInCache(id);
@@ -48,12 +31,6 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
 
     @Override
     public Set<CompleteEvaluation> findAll() {
-        if (!identityMap().isEmpty()) {
-            return new LinkedHashSet<>(identityMap().values());
-        }
-        if (!cache.isEmpty()) {
-            return new LinkedHashSet<>(cache.values());
-        }
         TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findAll",
                 CompleteEvaluation.class);
         List<CompleteEvaluation> resultList = query.getResultList();

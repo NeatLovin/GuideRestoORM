@@ -2,7 +2,6 @@ package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.City;
 
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
@@ -10,28 +9,17 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class CityMapper extends AbstractMapper<City> {
-    // Les méthodes getSequenceQuery, getExistsQuery, getCountQuery ne sont plus nécessaires avec JPA
-    // Elles sont laissées vides pour satisfaire l'interface abstraite si besoin
-    @Override
-    protected String getSequenceQuery() { return null; }
-    @Override
-    protected String getExistsQuery() { return null; }
-    @Override
-    protected String getCountQuery() { return null; }
     private final EntityManager em;
 
     public CityMapper(EntityManager em) {
         this.em = em;
     }
 
-
-
-
-
     @Override
     public City findById(int id) {
         City cached = findInCache(id);
-        if (cached != null) return cached;
+        if (cached != null)
+            return cached;
         City city = em.find(City.class, id);
         if (city != null) {
             addToCache(city);
@@ -41,12 +29,6 @@ public class CityMapper extends AbstractMapper<City> {
 
     @Override
     public Set<City> findAll() {
-        if (!identityMap().isEmpty()) {
-            return new LinkedHashSet<>(identityMap().values());
-        }
-        if (!cache.isEmpty()) {
-            return new LinkedHashSet<>(cache.values());
-        }
         TypedQuery<City> query = em.createNamedQuery("City.findAll", City.class);
         List<City> resultList = query.getResultList();
         Set<City> result = new LinkedHashSet<>(resultList);
@@ -58,7 +40,8 @@ public class CityMapper extends AbstractMapper<City> {
 
     @Override
     public City create(City object) {
-        if (object == null) return null;
+        if (object == null)
+            return null;
         em.persist(object);
         addToCache(object);
         return object;
@@ -66,7 +49,8 @@ public class CityMapper extends AbstractMapper<City> {
 
     @Override
     public boolean update(City object) {
-        if (object == null || object.getId() == null) return false;
+        if (object == null || object.getId() == null)
+            return false;
         em.merge(object);
         addToCache(object);
         return true;
@@ -74,7 +58,8 @@ public class CityMapper extends AbstractMapper<City> {
 
     @Override
     public boolean delete(City object) {
-        if (object == null || object.getId() == null) return false;
+        if (object == null || object.getId() == null)
+            return false;
         City managed = em.contains(object) ? object : em.merge(object);
         em.remove(managed);
         removeFromCache(object.getId());
@@ -91,7 +76,8 @@ public class CityMapper extends AbstractMapper<City> {
     }
 
     public Set<City> findByZipCode(String zipCode) {
-        if (zipCode == null) return new LinkedHashSet<>();
+        if (zipCode == null)
+            return new LinkedHashSet<>();
         TypedQuery<City> query = em.createNamedQuery("City.findByZipCode", City.class);
         query.setParameter("zip", zipCode);
         List<City> resultList = query.getResultList();
@@ -103,7 +89,8 @@ public class CityMapper extends AbstractMapper<City> {
     }
 
     public Set<City> findByName(String namePart) {
-        if (namePart == null) return new LinkedHashSet<>();
+        if (namePart == null)
+            return new LinkedHashSet<>();
         TypedQuery<City> query = em.createNamedQuery("City.findByName", City.class);
         query.setParameter("name", "%" + namePart.toUpperCase() + "%");
         List<City> resultList = query.getResultList();
@@ -114,4 +101,3 @@ public class CityMapper extends AbstractMapper<City> {
         return result;
     }
 }
-

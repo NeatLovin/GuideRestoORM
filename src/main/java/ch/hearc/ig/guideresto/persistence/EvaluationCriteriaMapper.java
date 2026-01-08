@@ -13,23 +13,6 @@ public class EvaluationCriteriaMapper extends AbstractMapper<ch.hearc.ig.guidere
         this.em = em;
     }
 
-    // Les méthodes getSequenceQuery, getExistsQuery, getCountQuery ne sont plus
-    // nécessaires avec JPA
-    @Override
-    protected String getSequenceQuery() {
-        return null;
-    }
-
-    @Override
-    protected String getExistsQuery() {
-        return null;
-    }
-
-    @Override
-    protected String getCountQuery() {
-        return null;
-    }
-
     @Override
     public ch.hearc.ig.guideresto.business.EvaluationCriteria findById(int id) {
         ch.hearc.ig.guideresto.business.EvaluationCriteria cached = findInCache(id);
@@ -45,12 +28,6 @@ public class EvaluationCriteriaMapper extends AbstractMapper<ch.hearc.ig.guidere
 
     @Override
     public Set<ch.hearc.ig.guideresto.business.EvaluationCriteria> findAll() {
-        if (!identityMap().isEmpty()) {
-            return new LinkedHashSet<>(identityMap().values());
-        }
-        if (!cache.isEmpty()) {
-            return new LinkedHashSet<>(cache.values());
-        }
         TypedQuery<ch.hearc.ig.guideresto.business.EvaluationCriteria> query = em.createNamedQuery(
                 "EvaluationCriteria.findAll", ch.hearc.ig.guideresto.business.EvaluationCriteria.class);
         List<ch.hearc.ig.guideresto.business.EvaluationCriteria> resultList = query.getResultList();

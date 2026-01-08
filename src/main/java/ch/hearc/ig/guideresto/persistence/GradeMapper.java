@@ -17,22 +17,12 @@ public class GradeMapper extends AbstractMapper<Grade> {
         this.em = em;
     }
 
-
-
-
-    // Les méthodes getSequenceQuery, getExistsQuery, getCountQuery ne sont plus nécessaires avec JPA
-    @Override
-    protected String getSequenceQuery() { return null; }
-    @Override
-    protected String getExistsQuery() { return null; }
-    @Override
-    protected String getCountQuery() { return null; }
-
     // CRUD de base
     @Override
     public Grade findById(int id) {
         Grade cached = findInCache(id);
-        if (cached != null) return cached;
+        if (cached != null)
+            return cached;
         Grade grade = em.find(Grade.class, id);
         if (grade != null) {
             addToCache(grade);
@@ -42,12 +32,6 @@ public class GradeMapper extends AbstractMapper<Grade> {
 
     @Override
     public Set<Grade> findAll() {
-        if (!identityMap().isEmpty()) {
-            return new LinkedHashSet<>(identityMap().values());
-        }
-        if (!cache.isEmpty()) {
-            return new LinkedHashSet<>(cache.values());
-        }
         TypedQuery<Grade> query = em.createNamedQuery("Grade.findAll", Grade.class);
         List<Grade> resultList = query.getResultList();
         Set<Grade> result = new LinkedHashSet<>(resultList);
@@ -59,7 +43,8 @@ public class GradeMapper extends AbstractMapper<Grade> {
 
     @Override
     public Grade create(Grade object) {
-        if (object == null) return null;
+        if (object == null)
+            return null;
         em.persist(object);
         addToCache(object);
         return object;
@@ -67,7 +52,8 @@ public class GradeMapper extends AbstractMapper<Grade> {
 
     @Override
     public boolean update(Grade object) {
-        if (object == null || object.getId() == null) return false;
+        if (object == null || object.getId() == null)
+            return false;
         em.merge(object);
         addToCache(object);
         return true;
@@ -75,7 +61,8 @@ public class GradeMapper extends AbstractMapper<Grade> {
 
     @Override
     public boolean delete(Grade object) {
-        if (object == null || object.getId() == null) return false;
+        if (object == null || object.getId() == null)
+            return false;
         Grade managed = em.contains(object) ? object : em.merge(object);
         em.remove(managed);
         removeFromCache(object.getId());
@@ -129,7 +116,8 @@ public class GradeMapper extends AbstractMapper<Grade> {
     }
 
     public Grade findOneByEvaluationAndCriteria(int evaluationId, int criteriaId) {
-        TypedQuery<Grade> query = em.createQuery("SELECT g FROM Grade g WHERE g.evaluation.id = :evalId AND g.criteria.id = :critId", Grade.class);
+        TypedQuery<Grade> query = em.createQuery(
+                "SELECT g FROM Grade g WHERE g.evaluation.id = :evalId AND g.criteria.id = :critId", Grade.class);
         query.setParameter("evalId", evaluationId);
         query.setParameter("critId", criteriaId);
         List<Grade> resultList = query.getResultList();
@@ -141,4 +129,3 @@ public class GradeMapper extends AbstractMapper<Grade> {
         return null;
     }
 }
-

@@ -15,12 +15,11 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
         this.em = em;
     }
 
-
-
     @Override
     public RestaurantType findById(int id) {
         RestaurantType cached = findInCache(id);
-        if (cached != null) return cached;
+        if (cached != null)
+            return cached;
         RestaurantType type = em.find(RestaurantType.class, id);
         if (type != null) {
             addToCache(type);
@@ -28,15 +27,8 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
         return type;
     }
 
-
     @Override
     public Set<RestaurantType> findAll() {
-        if (!identityMap().isEmpty()) {
-            return new LinkedHashSet<>(identityMap().values());
-        }
-        if (!cache.isEmpty()) {
-            return new LinkedHashSet<>(cache.values());
-        }
         TypedQuery<RestaurantType> query = em.createNamedQuery("RestaurantType.findAll", RestaurantType.class);
         List<RestaurantType> resultList = query.getResultList();
         Set<RestaurantType> result = new LinkedHashSet<>(resultList);
@@ -45,8 +37,10 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
         }
         return result;
     }
+
     public Set<RestaurantType> findByName(String namePart) {
-        if (namePart == null) return new LinkedHashSet<>();
+        if (namePart == null)
+            return new LinkedHashSet<>();
         TypedQuery<RestaurantType> query = em.createNamedQuery("RestaurantType.findByName", RestaurantType.class);
         query.setParameter("name", "%" + namePart.toUpperCase() + "%");
         List<RestaurantType> resultList = query.getResultList();
@@ -57,11 +51,10 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
         return result;
     }
 
-
-
     @Override
     public RestaurantType create(RestaurantType object) {
-        if (object == null) return null;
+        if (object == null)
+            return null;
         em.persist(object);
         addToCache(object);
         return object;
@@ -69,7 +62,8 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
 
     @Override
     public boolean update(RestaurantType object) {
-        if (object == null || object.getId() == null) return false;
+        if (object == null || object.getId() == null)
+            return false;
         em.merge(object);
         addToCache(object);
         return true;
@@ -77,7 +71,8 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
 
     @Override
     public boolean delete(RestaurantType object) {
-        if (object == null || object.getId() == null) return false;
+        if (object == null || object.getId() == null)
+            return false;
         RestaurantType managed = em.contains(object) ? object : em.merge(object);
         em.remove(managed);
         removeFromCache(object.getId());
@@ -92,13 +87,4 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
         }
         return false;
     }
-
-
-    // Les méthodes getSequenceQuery, getExistsQuery, getCountQuery ne sont plus nécessaires avec JPA
-    @Override
-    protected String getSequenceQuery() { return null; }
-    @Override
-    protected String getExistsQuery() { return null; }
-    @Override
-    protected String getCountQuery() { return null; }
 }
