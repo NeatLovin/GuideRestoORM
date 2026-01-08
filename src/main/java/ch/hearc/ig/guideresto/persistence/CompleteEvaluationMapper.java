@@ -56,8 +56,8 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
     public boolean update(CompleteEvaluation evaluation) {
         if (evaluation == null || evaluation.getId() == null)
             return false;
-        em.merge(evaluation);
-        addToCache(evaluation);
+        CompleteEvaluation managed = em.merge(evaluation);
+        addToCache(managed);
         return true;
     }
 

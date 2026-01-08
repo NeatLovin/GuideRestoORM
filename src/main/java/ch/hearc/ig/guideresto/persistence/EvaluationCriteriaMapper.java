@@ -52,8 +52,8 @@ public class EvaluationCriteriaMapper extends AbstractMapper<ch.hearc.ig.guidere
     public boolean update(ch.hearc.ig.guideresto.business.EvaluationCriteria object) {
         if (object == null || object.getId() == null)
             return false;
-        em.merge(object);
-        addToCache(object);
+        ch.hearc.ig.guideresto.business.EvaluationCriteria managed = em.merge(object);
+        addToCache(managed);
         return true;
     }
 

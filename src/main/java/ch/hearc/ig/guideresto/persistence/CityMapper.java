@@ -51,8 +51,8 @@ public class CityMapper extends AbstractMapper<City> {
     public boolean update(City object) {
         if (object == null || object.getId() == null)
             return false;
-        em.merge(object);
-        addToCache(object);
+        City managed = em.merge(object);
+        addToCache(managed);
         return true;
     }
 

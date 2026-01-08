@@ -64,8 +64,8 @@ public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
     public boolean update(RestaurantType object) {
         if (object == null || object.getId() == null)
             return false;
-        em.merge(object);
-        addToCache(object);
+        RestaurantType managed = em.merge(object);
+        addToCache(managed);
         return true;
     }
 

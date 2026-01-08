@@ -51,8 +51,8 @@ public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
     public boolean update(BasicEvaluation evaluation) {
         if (evaluation == null || evaluation.getId() == null)
             return false;
-        em.merge(evaluation);
-        addToCache(evaluation);
+        BasicEvaluation managed = em.merge(evaluation);
+        addToCache(managed);
         return true;
     }
 

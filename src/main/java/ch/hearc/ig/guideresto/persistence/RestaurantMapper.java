@@ -51,8 +51,8 @@ public class RestaurantMapper extends AbstractMapper<Restaurant> {
     public boolean update(Restaurant restaurant) {
         if (restaurant == null || restaurant.getId() == null)
             return false;
-        em.merge(restaurant);
-        addToCache(restaurant);
+        Restaurant managed = em.merge(restaurant);
+        addToCache(managed);
         return true;
     }
 

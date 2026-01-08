@@ -54,8 +54,8 @@ public class GradeMapper extends AbstractMapper<Grade> {
     public boolean update(Grade object) {
         if (object == null || object.getId() == null)
             return false;
-        em.merge(object);
-        addToCache(object);
+        Grade managed = em.merge(object);
+        addToCache(managed);
         return true;
     }
 
