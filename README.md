@@ -20,8 +20,15 @@ Pour commencer, veuillez:
 
 La suite des instructions est disponible dans le cours sur CyberLearn.
 
-**Note:** ce projet est pour l'heure configuré avec la base de données mémoire `FakeItems` comme pour le projet JDBC.
+**Note:** ce projet est pour l'heure configuré pour Oracle via `hibernate.properties` (ou `hibernate.properties.template`).
 Vous pouvez récupérer vos Data Mappers ainsi que vos services et les injecter dans le projet pour démarrer plus rapidement.
+
+## Test manuel concurrence
+
+Lancez deux instances de l'application, éditez ou supprimez le même restaurant en même temps.
+Une seule modification/suppression passera, l'autre affichera :
+
+> Conflit de modification: ce restaurant est en cours de modification par un autre utilisateur. Rechargez la fiche et réessayez.
 
 ## Credits
 
