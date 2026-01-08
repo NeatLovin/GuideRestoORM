@@ -33,10 +33,6 @@
             <!-- Désactiver l'autocommit pour permettre les verrous de fonctionner correctement -->
             <property name="hibernate.connection.autocommit" value="false" />
             
-            <!-- Niveau d'isolation transactionnel pour supporter les verrous pessimistes -->
-            <!-- READ_COMMITTED est recommandé pour Oracle avec verrous pessimistes -->
-            <property name="hibernate.connection.isolation" value="2" />
-            
             <!-- Configuration du timeout par défaut pour les verrous (en millisecondes) -->
             <!-- -1 signifie pas de timeout, 0 signifie échec immédiat si verrou non disponible -->
             <property name="jakarta.persistence.lock.timeout" value="0" />
