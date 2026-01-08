@@ -1,8 +1,6 @@
 package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.CompleteEvaluation;
-import ch.hearc.ig.guideresto.business.Grade;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import java.util.LinkedHashSet;
@@ -20,26 +18,26 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
 
     // Requêtes pour COMMENTAIRES
 
-    // Métadonnées
-    private static final String EXISTS_QUERY = "SELECT 1 FROM COMMENTAIRES WHERE numero = ?";
-    private static final String COUNT_QUERY = "SELECT COUNT(*) FROM COMMENTAIRES";
-    private static final String SEQUENCE_QUERY = "SELECT SEQ_EVAL.CURRVAL FROM DUAL";
-
-
+    @Override
+    protected String getSequenceQuery() {
+        return null;
+    }
 
     @Override
-    protected String getSequenceQuery() { return null; }
+    protected String getExistsQuery() {
+        return null;
+    }
 
     @Override
-    protected String getExistsQuery() { return null; }
-
-    @Override
-    protected String getCountQuery() { return null; }
+    protected String getCountQuery() {
+        return null;
+    }
 
     @Override
     public CompleteEvaluation findById(int id) {
         CompleteEvaluation cached = findInCache(id);
-        if (cached != null) return cached;
+        if (cached != null)
+            return cached;
         CompleteEvaluation evaluation = em.find(CompleteEvaluation.class, id);
         if (evaluation != null) {
             evaluation.setGrades(new LinkedHashSet<>(gradeMapper.findByEvaluationId(evaluation.getId())));
@@ -56,7 +54,8 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
         if (!cache.isEmpty()) {
             return new LinkedHashSet<>(cache.values());
         }
-        TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findAll", CompleteEvaluation.class);
+        TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findAll",
+                CompleteEvaluation.class);
         List<CompleteEvaluation> resultList = query.getResultList();
         Set<CompleteEvaluation> result = new LinkedHashSet<>(resultList);
         for (CompleteEvaluation evaluation : result) {
@@ -68,7 +67,8 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
 
     @Override
     public CompleteEvaluation create(CompleteEvaluation evaluation) {
-        if (evaluation == null) return null;
+        if (evaluation == null)
+            return null;
         em.persist(evaluation);
         // Les grades sont persistés via cascade définie sur CompleteEvaluation.grades
         addToCache(evaluation);
@@ -77,7 +77,8 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
 
     @Override
     public boolean update(CompleteEvaluation evaluation) {
-        if (evaluation == null || evaluation.getId() == null) return false;
+        if (evaluation == null || evaluation.getId() == null)
+            return false;
         em.merge(evaluation);
         addToCache(evaluation);
         return true;
@@ -85,7 +86,8 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
 
     @Override
     public boolean delete(CompleteEvaluation evaluation) {
-        if (evaluation == null || evaluation.getId() == null) return false;
+        if (evaluation == null || evaluation.getId() == null)
+            return false;
         CompleteEvaluation managed = em.contains(evaluation) ? evaluation : em.merge(evaluation);
         em.remove(managed);
         removeFromCache(evaluation.getId());
@@ -103,7 +105,8 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
 
     // Finders additionnels
     public Set<CompleteEvaluation> findByRestaurantId(int restaurantId) {
-        TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findByRestaurant", CompleteEvaluation.class);
+        TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findByRestaurant",
+                CompleteEvaluation.class);
         query.setParameter("restaurantId", restaurantId);
         List<CompleteEvaluation> resultList = query.getResultList();
         Set<CompleteEvaluation> result = new LinkedHashSet<>(resultList);
@@ -115,8 +118,10 @@ public class CompleteEvaluationMapper extends AbstractMapper<CompleteEvaluation>
     }
 
     public Set<CompleteEvaluation> findByUsername(String username) {
-        if (username == null) return new LinkedHashSet<>();
-        TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findByUsername", CompleteEvaluation.class);
+        if (username == null)
+            return new LinkedHashSet<>();
+        TypedQuery<CompleteEvaluation> query = em.createNamedQuery("CompleteEvaluation.findByUsername",
+                CompleteEvaluation.class);
         query.setParameter("username", username.toUpperCase());
         List<CompleteEvaluation> resultList = query.getResultList();
         Set<CompleteEvaluation> result = new LinkedHashSet<>(resultList);
