@@ -27,9 +27,10 @@ public class Application {
     private static final Logger logger = LogManager.getLogger(Application.class);
 
     // Services partagés
-    private static EvaluationService evaluationService; // ajouté
-    private static EvaluationCriteriaService criteriaService; // ajouté
-    private static RestaurantService restaurantService; // ajouté
+    private static CityService cityService;
+    private static EvaluationService evaluationService;
+    private static EvaluationCriteriaService criteriaService;
+    private static RestaurantService restaurantService;
 
     public static void main(String[] args) {
         scanner = new Scanner(System.in);
@@ -47,7 +48,7 @@ public class Application {
         BasicEvaluationMapper basicEvaluationMapper = new BasicEvaluationMapper(em);
 
         // Instanciation des services
-        CityService cityService = new CityService(em, cityMapper);
+        cityService = new CityService(em, cityMapper);
         RestaurantTypeService typeService = new RestaurantTypeService(em, typeMapper);
         restaurantService = new RestaurantService(em, cityMapper, restaurantMapper);
         evaluationService = new EvaluationService(em, completeEvaluationMapper, gradeMapper, basicEvaluationMapper);
@@ -131,7 +132,7 @@ public class Application {
      * @return L'instance du restaurant choisi par l'utilisateur
      */
     private static Restaurant pickRestaurant(Set<Restaurant> restaurants) {
-        if (restaurants.isEmpty()) { // Si la liste est vide on s'arrête là
+        if (restaurants.isEmpty()) {
             System.out.println("Aucun restaurant n'a été trouvé !");
             return null;
         }
@@ -301,7 +302,7 @@ public class Application {
         String text;
         for (Evaluation currentEval : restaurant.getEvaluations()) {
             text = getCompleteEvaluationDescription(currentEval);
-            if (text != null) { // On va recevoir des null pour les BasicEvaluation donc on ne les traite pas !
+            if (text != null) {
                 sb.append(text).append("\n");
             }
         }
@@ -309,12 +310,11 @@ public class Application {
         System.out.println(sb);
 
         int choice;
-        do { // Tant que l'utilisateur n'entre pas 0 ou 6, on lui propose à nouveau les
-             // actions
+        do {
             showRestaurantMenu();
             choice = readInt();
             proceedRestaurantMenu(choice, restaurant);
-        } while (choice != 0 && choice != 6); // 6 car le restaurant est alors supprimé...
+        } while (choice != 0 && choice != 6);
     }
 
     /**
@@ -387,7 +387,6 @@ public class Application {
      *                   réalisée
      */
     private static void proceedRestaurantMenu(int choice, Restaurant restaurant) {
-        // Pour une vraie application, il faudrait passer les mappers ici aussi
         switch (choice) {
             case 1:
                 addBasicEvaluation(restaurant, true);
@@ -519,8 +518,17 @@ public class Application {
             Restaurant locked = session.getLockedRestaurant();
 
             System.out.println("Edition de l'adresse d'un restaurant !");
+            if (locked.getAddress() == null) {
+                locked.setAddress(new Localisation());
+            }
             System.out.println("Nouvelle rue : ");
             locked.getAddress().setStreet(readNonBlankString());
+
+            City city;
+            do {
+                city = pickCity(cityService);
+            } while (city == null);
+            locked.getAddress().setCity(city);
 
             session.commit();
             System.out.println("L'adresse a bien été modifiée ! Merci !");

@@ -22,13 +22,19 @@ public class CityService {
 
     public City createCity(City city) {
         EntityTransaction tx = em.getTransaction();
+        boolean startedTx = false;
         try {
-            tx.begin();
+            if (!tx.isActive()) {
+                tx.begin();
+                startedTx = true;
+            }
             cityMapper.create(city);
-            tx.commit();
+            if (startedTx) {
+                tx.commit();
+            }
             return city;
         } catch (Exception e) {
-            if (tx.isActive())
+            if (startedTx && tx.isActive())
                 tx.rollback();
             throw e;
         }
@@ -36,13 +42,19 @@ public class CityService {
 
     public City updateCity(City city) {
         EntityTransaction tx = em.getTransaction();
+        boolean startedTx = false;
         try {
-            tx.begin();
+            if (!tx.isActive()) {
+                tx.begin();
+                startedTx = true;
+            }
             cityMapper.update(city);
-            tx.commit();
+            if (startedTx) {
+                tx.commit();
+            }
             return city;
         } catch (Exception e) {
-            if (tx.isActive())
+            if (startedTx && tx.isActive())
                 tx.rollback();
             throw e;
         }
@@ -50,13 +62,19 @@ public class CityService {
 
     public boolean deleteCity(City city) {
         EntityTransaction tx = em.getTransaction();
+        boolean startedTx = false;
         try {
-            tx.begin();
+            if (!tx.isActive()) {
+                tx.begin();
+                startedTx = true;
+            }
             boolean result = cityMapper.delete(city);
-            tx.commit();
+            if (startedTx) {
+                tx.commit();
+            }
             return result;
         } catch (Exception e) {
-            if (tx.isActive())
+            if (startedTx && tx.isActive())
                 tx.rollback();
             throw e;
         }
